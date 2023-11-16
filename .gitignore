@@ -1,6 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,linux,macos,database,data
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,linux,macos,database,data
-
+datasets/
 ### Data ###
 *.csv
 *.dat
