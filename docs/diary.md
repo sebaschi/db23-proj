@@ -1,3 +1,7 @@
+# TODOs
+* Write a script that makes tables and inserts the data.
+* Find out if data cleaning can be done in python with pandas or if it all must be SQL scipts. 
+
 # Project Diary
 
 | Version<br/> 0.00     | Author: <br />michel.romancuk@stud.unibas.ch<br />sebastian.lenzlinger@unibas.ch<br />                                        | HS 2023<br />Databases<br />                                                            |
