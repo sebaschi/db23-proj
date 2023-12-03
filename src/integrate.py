@@ -65,8 +65,9 @@ def process_miv_data():
     return cleaned_miv_df
 
 
-def process_accident_data():
-
+def process_accident_data(file_present: bool):
+    if not file_present:
+        du.process_urls(data_dir, accident_file_url)
     acc_df_unified = du.load_dataframes_from_geojson_files(data_dir, accident_file_u_string)
     acc_cols_to_keep = ['AccidentUID', 'AccidentHour', 'AccidentYear', 'AccidentWeekDay_en', 'AccidentType',
                         'AccidentSeverityCategory', 'AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
@@ -77,6 +78,6 @@ def process_accident_data():
 
 
 if __name__ == '__main__':
-    acc_df = process_accident_data()
+    acc_df = process_accident_data(False)
     print(acc_df.dtypes)
     print(acc_df.head(100))
