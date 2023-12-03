@@ -1,8 +1,6 @@
 import os
-
 import pandas as pd
-import psycopg2
-from psycopg2 import sql
+from sqlalchemy import create_engine
 
 integrated_dir = 'datasets/integrated/'
 
@@ -13,7 +11,6 @@ db_info = {
     'port': '5432',
     'user': 'seb',
     'password': '',
-    'sslmode': 'disable'
 }
 
 csv_table_maps = [
@@ -21,18 +18,18 @@ csv_table_maps = [
     {'file': os.path.join(integrated_dir, 'MivCount.csv'), 'table': 'MivCount'}
 ]
 
-db_connection = psycopg2.connect(**db_info)
-
+# Create a SQLAlchemy engine
+engine = create_engine(
+    f"postgresql://{db_info['user']}:{db_info['password']}@{db_info['host']}:{db_info['port']}/{db_info['database']}",
+    echo=True  # Set echo to True to display SQL queries (optional)
+)
 
 def csv_to_existing_table(csv_file_path, table_name):
     df = pd.read_csv(csv_file_path)
-    curs = db_connection.cursor()
-    df.to_sql(table_name, db_connection, if_exists='append', index_label=False)
-    db_connection.commit()
-    curs.close()
-
+    df.to_sql(table_name, engine, if_exists='append', index=False)
 
 for i in csv_table_maps:
     csv_to_existing_table(i['file'], i['table'])
 
-db_connection.close()
+# Close the SQLAlchemy engine
+engine.dispose()

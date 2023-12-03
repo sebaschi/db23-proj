@@ -61,7 +61,7 @@ CREATE TABLE Accidents (
     AccidentInvolvingMotorcycle BOOLEAN ,
     RoadType VARCHAR(5) ,
     RoadType_en VARCHAR(256) ,
-    Geometry geometry(Point) ,
+    Geometry geometry(Point, 4326) ,
 
     PRIMARY KEY (AccidentUID) ,
     CHECK ( AccidentHour BETWEEN 0 AND 23) ,
@@ -75,3 +75,5 @@ COPY FootBikeCount FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrat
 COPY MivCount FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/MivCount.csv'
     DELIMITER ','
     CSV HEADER;
+
+COPY Accidents FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/Accidents.geojson' WITH (FORMAT 'geojson');
