@@ -8,6 +8,10 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG, filename='data_utils.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('data_utils.py')
+stream_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+stream_handler.setFormatter(formatter)
+logger.addHandler(stream_handler)
 
 
 def download_csv(url, local_filename):
@@ -54,23 +58,26 @@ def load_dataframe_from_csv(filepath):
 def load_dataframes_from_csv_files(data_dir, u_string):
     dataframes = []
 
-    with tpe(max_workers=5) as executor:
-        for filename in os.listdir(data_dir):
-            if (u_string in filename) and filename.endswith('.csv'):
-                filepath = os.path.join(data_dir, filename)
-                future = executor.submit(load_dataframe_from_csv, filepath)
-                dataframes.append(future)
-
-    dataframes = [future.result() for future in dataframes if future.result() is not None]
-
-    return dataframes
-
-    # for filename in os.listdir(data_dir):
-    #     if (u_string in filename) and filename.endswith('.csv'):
-    #         filepath = os.path.join(data_dir, filename)
-    #         df = pd.read_csv(filepath, low_memory=False)
-    #         dataframes.append(df)
+    # with tpe(max_workers=5) as executor:
+    #     for filename in os.listdir(data_dir):
+    #         if (u_string in filename) and filename.endswith('.csv'):
+    #             filepath = os.path.join(data_dir, filename)
+    #             future = executor.submit(load_dataframe_from_csv, filepath)
+    #             dataframes.append(future)
+    #
+    # dataframes = [future.result() for future in dataframes if future.result() is not None]
+    #
     # return dataframes
+
+    for filename in os.listdir(data_dir):
+        if (u_string in filename) and filename.endswith('.csv'):
+            filepath = os.path.join(data_dir, filename)
+            df = pd.read_csv(filepath, low_memory=False)
+            logger.debug(f'Duplicate Rows for {filename}: {df[df.duplicated()].shape[0]}')
+            df = df.drop_duplicates()
+            logger.debug(f'Duplicate Rows after DROPPING for {filename}: {df[df.duplicated()].shape[0]}')
+            dataframes.append(df.drop_duplicates())
+    return dataframes
 
 
 def load_dataframes_from_geojson_files(data_dir, u_string):
@@ -89,6 +96,7 @@ def load_dataframes_from_geojson_files(data_dir, u_string):
 def combine_dataframes(dataframes):
     if dataframes:
         combined_dataframe = pd.concat(dataframes, ignore_index=True)
+        logger.debug(f'Duplicate Rows after combining: {combined_dataframe[combined_dataframe.duplicated()]}')
         return combined_dataframe
     else:
         print("No dataframes to combine")

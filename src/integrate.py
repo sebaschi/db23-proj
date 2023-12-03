@@ -43,6 +43,7 @@ fb_data_types = {
 }
 
 miv_data_types = {
+    'ID': 'int',
     'MSID': 'str',
     'ZSID': 'str',
     'Achse': 'str',
@@ -54,7 +55,6 @@ miv_data_types = {
     'Datum': 'str',
     'Hrs': 'int',
     'Weekday_en': 'str',
-    'MessungDatZeit': 'str'
 }
 
 acc_data_types = {
@@ -125,17 +125,19 @@ def process_miv_data(files_present=True):
     miv_df_unified[['Hrs', 'Mins', 'Sec']] = miv_df_unified['Time'].str.split(':', expand=True)
 
     miv_cols_to_keep = ['MSID','ZSID','Achse', 'NKoord', 'EKoord',  'Richtung', 'AnzFahrzeuge', 'AnzFahrzeugeStatus',
-                        'Datum', 'Hrs', 'MessungDatZeit']
+                        'Datum', 'Hrs',]
     miv_df_cols_dropped = miv_df_unified[miv_cols_to_keep]
 
     dt_obj = pd.to_datetime(miv_df_cols_dropped['Datum'])
     days = dt_obj.dt.weekday
-    miv_df_cols_dropped['Weekday_en'] = days.map(lambda x: weekday_names[x])
-    miv_df_cols_dropped['AnzFahrzeuge'] = miv_df_cols_dropped['AnzFahrzeuge'].fillna(0).astype(int)
-    miv_df_cols_dropped['ZSID'] = miv_df_cols_dropped['ZSID'].fillna('Missing').astype(str)
+    miv_df_cols_dropped.loc[:, 'Weekday_en'] = days.map(lambda x: weekday_names[x])
 
-    cleaned_miv_df = miv_df_cols_dropped[['MSID', 'ZSID', 'Achse', 'NKoord', 'EKoord', 'Richtung', 'AnzFahrzeuge',
-                                          'AnzFahrzeugeStatus', 'Datum', 'Hrs', 'Weekday_en', 'MessungDatZeit']]
+    miv_df_cols_dropped.loc[:, 'AnzFahrzeuge'] = miv_df_cols_dropped['AnzFahrzeuge'].fillna(0).astype(int)
+    miv_df_cols_dropped[:, 'ZSID'] = miv_df_cols_dropped['ZSID'].fillna('Missing').astype(str)
+    miv_df_cols_dropped['ID'] = (miv_df_cols_dropped.index + 1).copy()
+
+    cleaned_miv_df = miv_df_cols_dropped[['ID', 'MSID', 'ZSID', 'Achse', 'NKoord', 'EKoord', 'Richtung', 'AnzFahrzeuge',
+                                          'AnzFahrzeugeStatus', 'Datum', 'Hrs', 'Weekday_en']]
 
     cleaned_miv_df = cleaned_miv_df.astype(miv_data_types)
     cleaned_miv_df = cleaned_miv_df.drop_duplicates()
@@ -158,7 +160,6 @@ def process_accident_data(file_present: bool = True):
     }, inplace=True)
 
     cleaned_acc_df = cleaned_acc_df.astype(acc_data_types)
-
     return cleaned_acc_df
 
 
@@ -223,10 +224,5 @@ def miv_to_integrated_csv(miv_present=True):
 
 
 if __name__ == '__main__':
-    #process_all_data_sources(True, True, True)
-    miv_to_integrated_csv()
-    path = os.path.join(integrated_dir, 'MivCount.csv')
-    df = pd.read_csv(path)
-    df = df[['MSID', 'MessungDatZeit']]
-    duplicate_rows = df[df.duplicated()]
-    print(duplicate_rows.shape[0])
+    process_all_data_sources(True, True, True)
+    # miv_to_integrated_csv()

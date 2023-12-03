@@ -24,8 +24,9 @@ CREATE TABLE FootBikeCount (
 DROP TABLE IF EXISTS MivCount;
 
 CREATE TABLE MivCount (
-    MSID VARCHAR(256) ,
-    ZSID VARCHAR(256) NULL,
+    ID INTEGER ,
+    MSID VARCHAR(10) ,
+    ZSID VARCHAR(10) ,
     Achse VARCHAR(256) ,
     NKoord INTEGER ,
     EKoord INTEGER ,
@@ -35,8 +36,8 @@ CREATE TABLE MivCount (
     Datum VARCHAR(10) ,
     Hrs Integer ,
     Weekday_en VARCHAR(10),
-    MessungDatZeit VARCHAR(100),
-    PRIMARY KEY (MSID, Achse,Richtung, AnzFahrzeuge, Datum, Hrs),
+
+    PRIMARY KEY (ID),
     CHECK (Weekday_en IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
     CHECK (Hrs BETWEEN 0 AND 23)
 );
