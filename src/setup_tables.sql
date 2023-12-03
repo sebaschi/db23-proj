@@ -35,7 +35,7 @@ CREATE TABLE MivCount (
     Datum VARCHAR(10) ,
     Hrs Integer ,
     Weekday_en VARCHAR(10),
-    PRIMARY KEY (MSID),
+    PRIMARY KEY (MSID, Achse,Richtung, Datum, Hrs),
     CHECK (Weekday_en IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
     CHECK (Hrs BETWEEN 0 AND 23)
 );
@@ -44,7 +44,7 @@ CREATE TABLE MivCount (
 DROP TABLE IF EXISTS Accidents;
 
 CREATE TABLE Accidents (
-    AccidentUID VARCHAR(32) ,
+    AccidentUID VARCHAR(256) ,
     AccidentYear INTEGER ,
     AccidentMonth INTEGER,
     AccidentWeekDay_en VARCHAR(10) ,
@@ -67,5 +67,9 @@ CREATE TABLE Accidents (
 );
 
 COPY FootBikeCount FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/FootBikeCount.csv'
+    DELIMITER ','
+    CSV HEADER;
+
+COPY MivCount FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/MivCount.csv'
     DELIMITER ','
     CSV HEADER;

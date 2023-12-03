@@ -125,7 +125,7 @@ def process_miv_data(files_present=True):
 
     miv_cols_to_keep = ['MSID','ZSID','Achse', 'EKoord', 'NKoord', 'Richtung', 'AnzFahrzeuge', 'AnzFahrzeugeStatus',
                         'Datum', 'Hrs']
-    miv_df_cols_dropped = miv_df_unified[miv_cols_to_keep]
+    miv_df_cols_dropped = miv_df_unified#[miv_cols_to_keep]
 
     dt_obj = pd.to_datetime(miv_df_cols_dropped['Datum'])
     days = dt_obj.dt.weekday
@@ -136,6 +136,7 @@ def process_miv_data(files_present=True):
                                           'AnzFahrzeugeStatus', 'Datum', 'Hrs', 'Weekday_en']]
 
     cleaned_miv_df = cleaned_miv_df.astype(miv_data_types)
+    cleaned_miv_df = cleaned_miv_df.drop_duplicates()
     return cleaned_miv_df
 
 
@@ -222,3 +223,7 @@ def miv_to_integrated_csv(miv_present=True):
 if __name__ == '__main__':
     #process_all_data_sources(True, True, True)
     miv_to_integrated_csv()
+    # path = os.path.join(integrated_dir, 'MivCount.csv')
+    # df = pd.read_csv(path)
+    # duplicate_rows = df[df.duplicated()]
+    # print(duplicate_rows.shape[0])
