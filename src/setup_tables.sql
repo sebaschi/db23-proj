@@ -25,17 +25,18 @@ DROP TABLE IF EXISTS MivCount;
 
 CREATE TABLE MivCount (
     MSID VARCHAR(256) ,
-    ZSID VARCHAR(256) ,
+    ZSID VARCHAR(256) NULL,
     Achse VARCHAR(256) ,
     NKoord INTEGER ,
     EKoord INTEGER ,
-    Richtung VARCHAR(10) ,
+    Richtung VARCHAR(100) ,
     AnzFahrzeuge INTEGER ,
     AnzFahrzeugeStatus VARCHAR(20) ,
     Datum VARCHAR(10) ,
     Hrs Integer ,
     Weekday_en VARCHAR(10),
-    PRIMARY KEY (MSID),
+    MessungDatZeit VARCHAR(100),
+    PRIMARY KEY (MSID, Achse,Richtung, AnzFahrzeuge, Datum, Hrs),
     CHECK (Weekday_en IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
     CHECK (Hrs BETWEEN 0 AND 23)
 );
@@ -44,7 +45,7 @@ CREATE TABLE MivCount (
 DROP TABLE IF EXISTS Accidents;
 
 CREATE TABLE Accidents (
-    AccidentUID VARCHAR(32) ,
+    AccidentUID VARCHAR(256) ,
     AccidentYear INTEGER ,
     AccidentMonth INTEGER,
     AccidentWeekDay_en VARCHAR(10) ,
@@ -67,5 +68,9 @@ CREATE TABLE Accidents (
 );
 
 COPY FootBikeCount FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/FootBikeCount.csv'
+    DELIMITER ','
+    CSV HEADER;
+
+COPY MivCount FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/MivCount.csv'
     DELIMITER ','
     CSV HEADER;
