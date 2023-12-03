@@ -61,6 +61,9 @@ def process_miv_data():
     days = dt_obj.dt.weekday
     miv_df_cols_dropped['Weekday_en'] = days.map(lambda x: weekday_names[x])
 
+    # Convert row type to int so they match other
+    miv_df_cols_dropped['EKoord'] = miv_df_cols_dropped['EKoord'].astype(int)
+    miv_df_cols_dropped['NKoord'] = miv_df_cols_dropped['NKoord'].astype(int)
 
     cleaned_miv_df = miv_df_cols_dropped
     return cleaned_miv_df
