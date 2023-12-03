@@ -29,6 +29,8 @@ data_dir = 'datasets/'
 integrated_dir = 'datasets/integrated/'
 logs_dir = 'logs/'
 
+signaled_speeds_json_api = 'https://www.ogd.stadt-zuerich.ch/wfs/geoportal/Signalisierte_Geschwindigkeiten?service=WFS&version=1.1.0&request=GetFeature&outputFormat=GeoJSON&typename=view_geoserver_tempo_ist'
+
 weekday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 fb_data_types = {
@@ -231,6 +233,10 @@ def acc_to_cleaned_geojson(acc_present=True):
     logger.info("ACC integrated csv created.")
     end_time = time.time()
     logger.info(f'Time taken for Accidents: {end_time - start_time3}')
+
+
+def load_tempo_geojson_from_api_to_local():
+    du.load_file_from_api(signaled_speeds_json_api, 'signaled_speeds.geojson', integrated_dir)
 
 
 if __name__ == '__main__':

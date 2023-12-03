@@ -1,3 +1,4 @@
+import json
 import os
 import pandas as pd
 import requests
@@ -115,6 +116,17 @@ def create_unified_df(urls_file, u_string, data_dir, files_present=False):
     return df_unified
 
 
+def load_file_from_api(api_link, target_name, integrated_dir):
+    response = requests.get(api_link)
+    final_location = os.path.join(integrated_dir, target_name)
+    if response.status_code == 200:
+        logger.info(f"Succesfull get from {api_link}")
+        data = response.json()
+        with open(f'{final_location}.geojson', 'w') as file:
+            json.dump(data, file)
+        logger.info(f"{api_link} successfully downloaded and saved to {final_location}")
+    else:
+        logger.critical(f"Failed to get data. Status Code: {response.status_code}")
 def save_dataframe_to_csv(df, integrated_dir, filename):
     pass
 

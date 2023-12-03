@@ -57,6 +57,24 @@ def run_geojson_loader_script(script, *args):
         logger.info(f"Remember to set the correct permissions for the script: chmod +x {script}")
 
 
+def geojson_loader(*args):
+    geojson_file, db_name, db_user, db_password, db_host, db_port, target_table = args
+    cmd = [
+        "ogr2ogr",
+        "-f", "PostgreSQL",
+        f"PG:dbname='{db_name}' host='{db_host}' port='{db_port}' user='{db_user}' password='{db_password}'",
+        geojson_file,
+        "-nln", target_table,
+        "-append"
+    ]
+    try:
+        # Run the command
+        res = subprocess.run(cmd, check=True, text=True, capture_output=True)
+        logger.info(f"ogr2ogr command executed successfully. Output: {res.stdout}")
+    except subprocess.CalledProcessError as e:
+        logger.exception(f"Error executing ogr2ogr command: {e}")
+
+
 if __name__ == '__main__':
     run_sql(setup_tables_script, db_info)
     logger.info("Finnished setting up tables.")
