@@ -65,7 +65,7 @@ def process_accident_data():
     acc_cols_to_keep = ['AccidentUID', 'AccidentHour', 'AccidentYear', 'AccidentWeekDay_en', 'AccidentType',
                         'AccidentSeverityCategory', 'AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
                         'AccidentInvolvingMotorcycle', 'RoadType', 'RoadType_en', 'AccidentLocation_CHLV95_E',
-                        'AccidentLocation_CHLV95_N', 'geometry']
+                        'AccidentLocation_CHLV95_N', 'geometry', 'AccidentMonth']
     cleaned_acc_df = acc_df_unified[acc_cols_to_keep]
     return cleaned_acc_df
 
