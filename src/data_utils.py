@@ -1,11 +1,13 @@
-# data_utils.py
-
 import os
 import pandas as pd
 import requests
 from urllib.parse import urlparse
 import geopandas as gpd
 from concurrent.futures import ThreadPoolExecutor as tpe
+import logging
+
+logging.basicConfig(level=logging.DEBUG, filename='data_utils.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('data_utils.py')
 
 
 def download_csv(url, local_filename):
@@ -33,9 +35,9 @@ def process_urls(data_dir, urls_file):
 
         # Check if the file already exists
         if not os.path.isfile(local_filename):
-            print(f"Downloading {url}...")
+            logger.debug(f"Downloading {url}...")
             download_csv(url, local_filename)
-            print(f"Saved to {local_filename}")
+            logger.debug(f"Saved to {local_filename}")
         else:
             print(f"File {filename} already exists in {data_dir}, skipping download.")
 
@@ -45,7 +47,7 @@ def load_dataframe_from_csv(filepath):
         df = pd.read_csv(filepath, low_memory=False)
         return df
     except Exception as e:
-        print(f"Error loading {filepath}: {e}")
+        logger.error(f"Error loading {filepath}: {e}")
         return None
 
 
@@ -75,11 +77,11 @@ def load_dataframes_from_geojson_files(data_dir, u_string):
     print('u_string', u_string)
     gdf = gpd.GeoDataFrame()
     for filename in os.listdir(data_dir):
-        print("Filename:", filename)
+        #print("Filename:", filename)
         if (u_string in filename) and filename.endswith('.json'):
             filepath = os.path.join(data_dir, filename)
             print("Filepath:", filepath)
-            gdf = gpd.read_file(filepath)  # Read GeoJSON directly as GeoDataFrame
+            gdf = gpd.read_file(filepath)
 
     return gdf
 
@@ -90,7 +92,7 @@ def combine_dataframes(dataframes):
         return combined_dataframe
     else:
         print("No dataframes to combine")
-        return pd.DataFrame()  # Return an empty DataFrame
+        return pd.DataFrame()
 
 
 def create_unified_df(urls_file, u_string, data_dir, files_present=False):
@@ -110,7 +112,6 @@ def save_dataframe_to_csv(df, integrated_dir, filename):
 
 
 if __name__ == "__main__":
-    # Test the functions here if necessary
     csv_urls_file = '../docs/all_csv_urls.txt'
     datasets_dir = 'datasets/'
     output_file = 'column_names.txt'

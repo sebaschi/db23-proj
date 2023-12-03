@@ -4,6 +4,12 @@ import os
 import requests
 import pandas as pd
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG, filename='integrate.log',
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('integrate.py')
+
 foot_bike_urls_file = '../docs/foot_bike_zaehlung_urls.txt'
 miv_file_urls = '../docs/verkehrszaehlung_moto_urls.txt'
 accident_file_url = '../docs/accident_loc_urls.txt'
@@ -41,7 +47,7 @@ def process_foot_bike_data():
 
 
 def process_miv_data():
-    miv_df_unified = du.create_unified_df(miv_file_urls, motor_file_u_string, data_dir,files_present=True)
+    miv_df_unified = du.create_unified_df(miv_file_urls, motor_file_u_string, data_dir, files_present=True)
 
     miv_df_unified[['Date', "Time"]] = miv_df_unified['MessungDatZeit'].str.split('T', expand=True)
     miv_df_unified[['Hrs', 'Mins', 'Sec']] = miv_df_unified['Time'].str.split(':', expand=True)
@@ -65,13 +71,12 @@ def process_accident_data():
     acc_cols_to_keep = ['AccidentUID', 'AccidentHour', 'AccidentYear', 'AccidentWeekDay_en', 'AccidentType',
                         'AccidentSeverityCategory', 'AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
                         'AccidentInvolvingMotorcycle', 'RoadType', 'RoadType_en', 'AccidentLocation_CHLV95_E',
-                        'AccidentLocation_CHLV95_N', 'geometry', 'AccidentMonth']
+                        'AccidentLocation_CHLV95_N', 'AccidentMonth', 'geometry']
     cleaned_acc_df = acc_df_unified[acc_cols_to_keep]
     return cleaned_acc_df
 
 
 if __name__ == '__main__':
-    fb_df = process_miv_data()
-    print(fb_df['MessungDatZeit'])
-    print(fb_df.dtypes)
-    print(fb_df.head(100))
+    acc_df = process_accident_data()
+    print(acc_df.dtypes)
+    print(acc_df.head(100))
