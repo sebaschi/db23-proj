@@ -1,29 +1,14 @@
-# Databases Project
+# Database Project Group 1
 
-Use this repository for your integration code and any source code created while working on your project (ad-hoc code,
-SQL queries, project files needed by external tools, etc.).
+## Preliminaries
+* Ensure you have access to a running postgres instance
+* Ensure you have ```python3``` and ```pip``` installed.
+* From within the root of the project, run ```pip install -r requirements.txt```. This insures all python dependecies are  met.
+* In ```src/fill_db.py``` look for the ```db_info``` variable and adapt it to your credentials.
 
-- Merge your code into the main branch on the due date. 
-- Do not commit datasets!
-- Any other document (except for the dump in the final hand-in) should be handed-in via ADAM.
-
-If you have any questions regarding the project, please do not hesitate to ask during the exercise lessons or via mail
-to [raphael.waltenspuel@unibas.ch](mailto:raphael.waltenspuel@unibas.ch)!
-
-It is recommended that you first create a ```.gitignore``` file. (And exclude the "datasets" folder, for example). A useful tool for creating ```.gitignore``` files is www.gitignore.io.
-
-Feel free to update or replace this readme with a brief description of your project and goals.
-
-### Database setup guide
-
-1. Make sure all the requirements in ’requirements.txt’ are met. If they are not
-met, run pip install -r requirements.txt in the root of the project.
-2. Run the python script ’integrate.py’ in the ’src’ folder. Set all booleans to
-’False’ in the main methode of the script. If the datasets have already been
-downloaded, set all the booleans to ’True’. The datasets need to be in a
-folder named ’datasets’ in ’src’ (this should be set up automatically by the
-script).
-3. Ensure you have a running Postgres instance with a database.
-4. Ensure you have the correct credentials in the python script ’fill_db.py’ in
-’dbinfo’
-5. Run ’fill_db.py’
+## Action
+In the following the order matters.
+1. Run ```unsure_dirs_exist.py```. This makes sure all the directories needed to perform the data integration and logging exist.
+1. Run ```integrate.py```. Adjust the main method to fit your needs. In particular adjust the ```process_all_data()``` method, such that the parameter corresponding to a dataset is ```False``` if the script shall download it form the  internet, and ```True``` else. To get geojson data form signaled speed in to city of Zurich uncomment the line in the ``main`` method where you find ```load_tempo_geojson_from_api_to_local()```
+2. Run ```fill_db.py```. This will load the data into the database based on the credentials given in the ``db_info`` variable.
+3. Perform Analysis.
