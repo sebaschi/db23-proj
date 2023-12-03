@@ -43,6 +43,7 @@ def process_foot_bike_data():
     days = dt_obj.dt.weekday
     fb_df_grouped['Weekday_en'] = days.map(lambda x: weekday_names[x])
     cleaned_fb_df = fb_df_grouped
+    cleaned_fb_df['ID'] = cleaned_fb_df.index + 1
     return cleaned_fb_df
 
 
@@ -65,7 +66,7 @@ def process_miv_data():
     return cleaned_miv_df
 
 
-def process_accident_data(file_present: bool):
+def process_accident_data(file_present: bool = True):
     if not file_present:
         du.process_urls(data_dir, accident_file_url)
     acc_df_unified = du.load_dataframes_from_geojson_files(data_dir, accident_file_u_string)
@@ -74,10 +75,14 @@ def process_accident_data(file_present: bool):
                         'AccidentInvolvingMotorcycle', 'RoadType', 'RoadType_en', 'AccidentLocation_CHLV95_E',
                         'AccidentLocation_CHLV95_N', 'AccidentMonth', 'geometry']
     cleaned_acc_df = acc_df_unified[acc_cols_to_keep]
+    cleaned_acc_df.rename(columns={
+        'AccidentLocation_CHLV95_E': 'EKoord',
+        'AccidentLocation_CHLV95_N': 'NKoord',
+    }, inplace=True)
     return cleaned_acc_df
 
 
 if __name__ == '__main__':
-    acc_df = process_accident_data(False)
+    acc_df = process_accident_data(True)
     print(acc_df.dtypes)
     print(acc_df.head(100))
