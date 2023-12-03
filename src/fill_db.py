@@ -12,9 +12,14 @@ logger.addHandler(stream_handler)
 
 integrated_dir = 'datasets/integrated/'
 accident_geojson_file = 'datasets/integrated/Accidents.geojson'
+signaled_speeds_file = 'datasets/integrated/signaled_speeds.geojson.geojson'
 accident_loader_script = 'load_accidents_into_db.sh'
 accident_table_name = 'accidents'
+signaled_speeds_table_name = 'signaled_speeds'
 
+"""
+Make sure db_info contain the correct credentials
+"""
 db_info = {
     'host': 'localhost',
     'database': 'test-db23',
@@ -24,7 +29,6 @@ db_info = {
 }
 setup_tables_script = 'setup_tables.sql'
 load_csvs_into_db_script = 'load_csvs_into_db.sql'
-
 
 
 def run_sql(script, db_info):
@@ -47,7 +51,6 @@ def run_sql(script, db_info):
 
 
 def run_geojson_loader_script(script, *args):
-
     try:
         cmd = ['bash', script] + list(args)
         res = subprocess.run(cmd, check=True, text=True, capture_output=True)
@@ -57,7 +60,13 @@ def run_geojson_loader_script(script, *args):
         logger.info(f"Remember to set the correct permissions for the script: chmod +x {script}")
 
 
-def geojson_loader(*args):
+def geojson_loader(*args, modus='append'):
+    """
+    Use this instead of run_geojson_loader_script() in the main method to avoid the bash dependency.
+    :param args: All the arguments needed for ogr2org to run properly
+    :param modus: append or overwrite db table
+    :return:
+    """
     geojson_file, db_name, db_user, db_password, db_host, db_port, target_table = args
     cmd = [
         "ogr2ogr",
@@ -65,7 +74,7 @@ def geojson_loader(*args):
         f"PG:dbname='{db_name}' host='{db_host}' port='{db_port}' user='{db_user}' password='{db_password}'",
         geojson_file,
         "-nln", target_table,
-        "-append"
+        f"-{modus}"
     ]
     try:
         # Run the command
@@ -88,5 +97,12 @@ if __name__ == '__main__':
                               db_info['host'],
                               db_info['port'],
                               accident_table_name)
-    logger.info('Finished loading geojson into db using bash script.')
-
+    logger.info('Finished loading accident geojson into db using bash script.')
+    geojson_loader(signaled_speeds_file,
+                   db_info['database'],
+                   db_info['user'],
+                   db_info['password'],
+                   db_info['host'],
+                   db_info['port'],
+                   signaled_speeds_table_name,
+                   modus='overwrite')

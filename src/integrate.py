@@ -79,23 +79,21 @@ acc_data_types = {
     'RoadType_en': 'str',
     'geometry': 'str' # TODO: Figure out what dtype this needs to be for postgres
 }
-
-
-def ensure_dirs_exist(data_dir, integrated_dir):
-    """
-    This should be called before anything else to make sure that the relevant directories exists.
-    :param data_dir: directory where the datasets are stored
-    :param integrated_dir: directory where the integrated data will be stored
-    :return:
-    """
-    logger.debug(f'data_dir: {data_dir}\n integrated_dir: {integrated_dir}')
-    logger.info("Ensuring needed directories exist.")
-    os.makedirs(data_dir, exist_ok=True)
-    logger.debug("data_dir created.")
-    os.makedirs(integrated_dir, exist_ok=True)
-    logger.debug("integrated_dir created")
-    os.makedirs(logs_dir, exist_ok=True)
-    logger.debug("logs_dir created")
+# def ensure_dirs_exist(data_dir, integrated_dir, logs_dir):
+#     """
+#     This should be called before anything else to make sure that the relevant directories exists.
+#     :param data_dir: directory where the datasets are stored
+#     :param integrated_dir: directory where the integrated data will be stored
+#     :return:
+#     """
+#     logger.debug(f'data_dir: {data_dir}\n integrated_dir: {integrated_dir}')
+#     logger.info("Ensuring needed directories exist.")
+#     os.makedirs(data_dir, exist_ok=True)
+#     logger.debug("data_dir created.")
+#     os.makedirs(integrated_dir, exist_ok=True)
+#     logger.debug("integrated_dir created")
+#     os.makedirs(logs_dir, exist_ok=True)
+#     logger.debug("logs_dir created")
 
 
 def process_foot_bike_data(files_present=True):
@@ -180,7 +178,7 @@ def process_all_data_sources(fb_present=True, miv_present=True, accident_present
     :param accident_present: bool, if the files present in local file system
     :return:
     """
-    ensure_dirs_exist(data_dir, integrated_dir)
+    # ensure_dirs_exist(data_dir, integrated_dir)
     logger.info("Started processing all data sources.")
     fb_to_integrated(fb_present)
 
@@ -240,6 +238,8 @@ def load_tempo_geojson_from_api_to_local():
 
 
 if __name__ == '__main__':
-    process_all_data_sources(True, True, True)
+    # ensure_dirs_exist(data_dir, integrated_dir, logs_dir)
+    # process_all_data_sources(True, True, True)
     # miv_to_integrated_csv()
     # acc_to_cleaned_geojson()
+    load_tempo_geojson_from_api_to_local()
