@@ -2,6 +2,11 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 DROP TABLE IF EXISTS FootBikeCount;
 
+DROP TABLE IF EXISTS Accidents;
+
+DROP TABLE IF EXISTS MivCount;
+
+
 CREATE TABLE FootBikeCount (
     ID INTEGER ,
     NORD INTEGER ,
@@ -21,7 +26,7 @@ CREATE TABLE FootBikeCount (
 
 );
 
-DROP TABLE IF EXISTS MivCount;
+
 
 CREATE TABLE MivCount (
     ID INTEGER ,
@@ -42,8 +47,6 @@ CREATE TABLE MivCount (
     CHECK (Hrs BETWEEN 0 AND 23)
 );
 
-
-DROP TABLE IF EXISTS Accidents;
 
 CREATE TABLE Accidents (
     AccidentUID VARCHAR(256) ,
@@ -67,13 +70,3 @@ CREATE TABLE Accidents (
     CHECK ( AccidentHour BETWEEN 0 AND 23) ,
     CHECK (AccidentWeekDay_en IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))
 );
-
-COPY FootBikeCount FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/FootBikeCount.csv'
-    DELIMITER ','
-    CSV HEADER;
-
-COPY MivCount FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/MivCount.csv'
-    DELIMITER ','
-    CSV HEADER;
-
-COPY Accidents FROM '/Users/seb/Projects/repos/group-1/src/datasets/integrated/Accidents.geojson' WITH (FORMAT 'geojson');

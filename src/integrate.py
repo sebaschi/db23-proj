@@ -8,7 +8,7 @@ import re
 
 import logging
 
-logging.basicConfig(level=logging.DEBUG, filename='integrate.log',
+logging.basicConfig(level=logging.DEBUG, filename='logs/integrate.log',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('integrate.py')
 stream_handler = logging.StreamHandler()
@@ -27,6 +27,7 @@ accident_file_u_string = 'RoadTrafficAccidentLocations.json'
 
 data_dir = 'datasets/'
 integrated_dir = 'datasets/integrated/'
+logs_dir = 'logs/'
 
 weekday_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -91,6 +92,8 @@ def ensure_dirs_exist(data_dir, integrated_dir):
     logger.debug("data_dir created.")
     os.makedirs(integrated_dir, exist_ok=True)
     logger.debug("integrated_dir created")
+    os.makedirs(logs_dir, exist_ok=True)
+    logger.debug("logs_dir created")
 
 
 def process_foot_bike_data(files_present=True):
@@ -181,6 +184,8 @@ def process_all_data_sources(fb_present=True, miv_present=True, accident_present
 
     miv_to_integrated_csv(miv_present)
 
+    acc_to_cleaned_geojson(accident_present)
+
 
 def fb_to_integrated(files_present=True):
 
@@ -229,6 +234,6 @@ def acc_to_cleaned_geojson(acc_present=True):
 
 
 if __name__ == '__main__':
-    # process_all_data_sources(True, True, True)
+    process_all_data_sources(True, True, True)
     # miv_to_integrated_csv()
-    acc_to_cleaned_geojson()
+    # acc_to_cleaned_geojson()

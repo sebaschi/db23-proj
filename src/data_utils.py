@@ -6,7 +6,7 @@ import geopandas as gpd
 from concurrent.futures import ThreadPoolExecutor as tpe
 import logging
 
-logging.basicConfig(level=logging.DEBUG, filename='data_utils.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, filename='logs/data_utils.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('data_utils.py')
 stream_handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
