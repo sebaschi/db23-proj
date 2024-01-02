@@ -113,7 +113,7 @@ def process_foot_bike_data(files_present=True):
     }).reset_index()
     dt_obj = pd.to_datetime(fb_df_grouped['DATE'])
     days = dt_obj.dt.weekday
-    fb_df_grouped['Weekday_en'] = days.map(lambda x: weekday_names[x])
+    fb_df_grouped.loc[:,'Weekday_en'] = days.map(lambda x: weekday_names[x])
     cleaned_fb_df = fb_df_grouped
     cleaned_fb_df['ID'] = cleaned_fb_df.index + 1
     cleaned_fb_df = cleaned_fb_df[['ID', 'NORD', 'OST', 'DATE', 'HRS', 'VELO_IN', 'VELO_OUT', 'FUSS_IN',
@@ -131,14 +131,14 @@ def process_miv_data(files_present=True):
 
     miv_cols_to_keep = ['MSID','ZSID','Achse', 'NKoord', 'EKoord',  'Richtung', 'AnzFahrzeuge', 'AnzFahrzeugeStatus',
                         'Datum', 'Hrs',]
-    miv_df_cols_dropped = miv_df_unified[miv_cols_to_keep]
+    miv_df_cols_dropped = miv_df_unified[miv_cols_to_keep].copy()
 
     dt_obj = pd.to_datetime(miv_df_cols_dropped['Datum'])
     days = dt_obj.dt.weekday
     miv_df_cols_dropped.loc[:, 'Weekday_en'] = days.map(lambda x: weekday_names[x])
 
     miv_df_cols_dropped.loc[:, 'AnzFahrzeuge'] = miv_df_cols_dropped['AnzFahrzeuge'].fillna(0).astype(int)
-    miv_df_cols_dropped[:, 'ZSID'] = miv_df_cols_dropped['ZSID'].fillna('Missing').astype(str)
+    miv_df_cols_dropped.loc[:, 'ZSID'] = miv_df_cols_dropped['ZSID'].fillna('Missing').astype(str)
     miv_df_cols_dropped['ID'] = (miv_df_cols_dropped.index + 1).copy()
 
     cleaned_miv_df = miv_df_cols_dropped[['ID', 'MSID', 'ZSID', 'Achse', 'NKoord', 'EKoord', 'Richtung', 'AnzFahrzeuge',
@@ -239,7 +239,7 @@ def load_tempo_geojson_from_api_to_local():
 
 if __name__ == '__main__':
     # ensure_dirs_exist(data_dir, integrated_dir, logs_dir)
-    # process_all_data_sources(True, True, True)
+    process_all_data_sources(True, False, False)
     # miv_to_integrated_csv()
     # acc_to_cleaned_geojson()
     load_tempo_geojson_from_api_to_local()

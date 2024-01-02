@@ -22,10 +22,10 @@ Make sure db_info contain the correct credentials
 """
 db_info = {
     'host': 'localhost',
-    'database': 'test-db23',
-    'port': '5432',
-    'user': 'seb',
-    'password': '',
+    'database': 'proj_db',
+    'port': '5433',
+    'user': 'sebl',
+    'password': 'hatred-pollute-digraph-disciple',
 }
 setup_tables_script = 'setup_tables.sql'
 load_csvs_into_db_script = 'load_csvs_into_db.sql'
