@@ -125,7 +125,7 @@ def process_foot_bike_data(files_present=True):
 
 def process_miv_data(files_present=True):
     miv_df_unified = du.create_unified_df(miv_file_urls, motor_file_u_string, data_dir, files_present=files_present)
-
+    logger.debug("Unified MIV dataframe created.")
     miv_df_unified[['Datum', "Time"]] = miv_df_unified['MessungDatZeit'].str.split('T', expand=True)
     miv_df_unified[['Hrs', 'Mins', 'Sec']] = miv_df_unified['Time'].str.split(':', expand=True)
 
@@ -180,7 +180,7 @@ def process_all_data_sources(fb_present=True, miv_present=True, accident_present
     """
     # ensure_dirs_exist(data_dir, integrated_dir)
     logger.info("Started processing all data sources.")
-    fb_to_integrated(fb_present)
+    #fb_to_integrated(fb_present)
 
     miv_to_integrated_csv(miv_present)
 
@@ -239,7 +239,7 @@ def load_tempo_geojson_from_api_to_local():
 
 if __name__ == '__main__':
     # ensure_dirs_exist(data_dir, integrated_dir, logs_dir)
-    process_all_data_sources(True, False, False)
+    process_all_data_sources(True, True, False)
     # miv_to_integrated_csv()
     # acc_to_cleaned_geojson()
     load_tempo_geojson_from_api_to_local()
