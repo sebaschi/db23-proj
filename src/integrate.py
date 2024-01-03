@@ -153,12 +153,18 @@ def process_accident_data(file_present: bool = True):
     if not file_present:
         du.process_urls(data_dir, accident_file_url)
     acc_df_unified = du.load_dataframes_from_geojson_files(data_dir, accident_file_u_string)
+    logger.debug(acc_df_unified[['AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
+                        'AccidentInvolvingMotorcycle']].head())
     acc_cols_to_keep = ['AccidentUID', 'AccidentYear', 'AccidentMonth', 'AccidentWeekDay_en','AccidentHour',
                         'AccidentLocation_CHLV95_N', 'AccidentLocation_CHLV95_E', 'AccidentType_en', 'AccidentType',
                         'AccidentSeverityCategory', 'AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
                         'AccidentInvolvingMotorcycle', 'RoadType', 'RoadType_en',
                         'geometry']
-    cleaned_acc_df = acc_df_unified[acc_cols_to_keep]
+    # Need to already convert boolean strings "by hand", otherwise all will become 'True'
+    for col in ['AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
+                        'AccidentInvolvingMotorcycle']:
+        acc_df_unified[col] = acc_df_unified[col].apply(du.convert_to_boolean)
+    cleaned_acc_df = acc_df_unified[acc_cols_to_keep].copy()
     cleaned_acc_df.rename(columns={
         'AccidentLocation_CHLV95_E': 'EKoord',
         'AccidentLocation_CHLV95_N': 'NKoord',
@@ -239,7 +245,8 @@ def load_tempo_geojson_from_api_to_local():
 
 if __name__ == '__main__':
     # ensure_dirs_exist(data_dir, integrated_dir, logs_dir)
-    process_all_data_sources(True, True, False)
+    #process_accident_data()
+    #process_all_data_sources(True, True, False)
     # miv_to_integrated_csv()
-    # acc_to_cleaned_geojson()
-    load_tempo_geojson_from_api_to_local()
+    acc_to_cleaned_geojson()
+    #load_tempo_geojson_from_api_to_local()
