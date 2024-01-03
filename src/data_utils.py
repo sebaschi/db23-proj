@@ -7,7 +7,7 @@ import geopandas as gpd
 from concurrent.futures import ThreadPoolExecutor as tpe
 import logging
 
-logging.basicConfig(level=logging.INFO, filename='logs/data_utils.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, filename='logs/data_utils.log', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('data_utils.py')
 stream_handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -129,6 +129,26 @@ def load_file_from_api(api_link, target_name, integrated_dir):
         logger.critical(f"Failed to get data. Status Code: {response.status_code}")
 def save_dataframe_to_csv(df, integrated_dir, filename):
     pass
+
+# Needed Since we converted strings all to True
+def convert_to_boolean(value):
+    true_values = ['true', '1', 'yes']
+    false_values = ['false', '0', 'no']
+
+    if isinstance(value, str):
+        value = value.lower()
+        if value in true_values:
+            return True
+        elif value in false_values:
+            return False
+        else:
+            raise ValueError(f"Invalid boolean string: {value}")
+
+    if isinstance(value, (int, float)):
+        return bool(value)
+
+    raise ValueError(f"Invalid boolean value type: {type(value)}")
+
 
 
 if __name__ == "__main__":
