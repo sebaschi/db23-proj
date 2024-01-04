@@ -1,8 +1,11 @@
 import logging
+
+import sqlalchemy
 from sshtunnel import SSHTunnelForwarder
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config import SSH_HOST, SSH_USERNAME, SSH_PASSWORD, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, SSH_PORT
+
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('db_connector.py')
@@ -10,6 +13,7 @@ stream_handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
+
 
 class RemoteDB:
     def __init__(self):
@@ -47,7 +51,7 @@ class RemoteDB:
     def execute_query(self, query):
         session = self.Session()
         try:
-            result = session.execute(query)
+            result = session.execute(sqlalchemy.text(query))
             session.commit()
             return result.fetchall()
         except Exception as e:

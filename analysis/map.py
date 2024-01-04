@@ -4,6 +4,7 @@ import os
 import folium
 from folium import plugins
 import logging
+from db_connector import RemoteDB
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('map.py')
@@ -26,6 +27,9 @@ fixed_map_zurich_original_coords = folium.Map(
     scrollWheelZoom=False,
     doubleClickZoom=False
 )
+
+def create_heat_view():
+    pass
 def create_acc_map():
     acc_gdf = gpd.read_file(accidents_filepath)
     acc_gdf['latitude'] = acc_gdf.geometry.y
