@@ -98,7 +98,7 @@ if __name__ == '__main__':
                               db_info['port'],
                               accident_table_name)
     logger.info('Finished loading accident geojson into db using bash script.')
-    geojson_loader(accident_loader_script,
+    run_geojson_loader_script(accident_loader_script,
                    signaled_speeds_file,
                    db_info['database'],
                    db_info['user'],
