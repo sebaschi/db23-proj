@@ -72,7 +72,7 @@ CREATE TABLE Accidents (
     CHECK ( AccidentHour BETWEEN 0 AND 23) ,
     CHECK (AccidentWeekDay_en IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))
 );
-
+-- Ad hoc via generate sql functionality in pycharm
 create table signaled_speeds
 (
     id                    serial
@@ -86,5 +86,5 @@ create table signaled_speeds
     temporegime           varchar,
     temporegime_technical varchar,
     umgesetzt_datum       timestamp with time zone,
-    wkb_geometry          geometry(Point, 4326)
+    wkb_geometry          geometry(Point, 4326) --changed from MultiLineString
 );
