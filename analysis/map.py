@@ -29,19 +29,49 @@ fixed_map_zurich_original_coords = folium.Map(
 )
 
 def create_heat_view():
-    pass
+    create_heat_view_sql = """
+        CREATE VIEW heat AS
+    SELECT
+        ST_Y(geometry) AS latitude,
+        ST_X(geometry) AS longitude,
+        AccidentYear AS Weight
+    FROM
+        accidents
+    WHERE
+        ST_Y(geometry) IS NOT NULL AND
+        ST_X(geometry) IS NOT NULL AND
+        AccidentYear IS NOT NULL;
+    """
+
+    remote_db = RemoteDB()
+    remote_db.execute_query(create_heat_view_sql)
+    remote_db.close()
+    logger.info("Heat View Created")\
+
+def get_heat_view():
+    create_heat_view()
+
+    get_heat_view_sql = """
+    SELECT latitude, longitude, weight
+    FROM heat;
+    """
+
+    remote_db = RemoteDB()
+
+    # Get heat map data from database
+    try:
+        result = remote_db.execute_query(get_heat_view_sql)
+        logger.info(f"Succesfully retrieved result {result}")
+        return result
+    except Exception as e:
+        logger.exception(f"Failed getting result with exception {e}")
+    finally:
+        remote_db.close()
+
 def create_acc_map():
-    acc_gdf = gpd.read_file(accidents_filepath)
-    acc_gdf['latitude'] = acc_gdf.geometry.y
-    acc_gdf['longitude'] = acc_gdf.geometry.x
 
 
-    # Ensure we're dealing with floats
-    acc_gdf['latitude'] = acc_gdf['latitude'].astype(float)
-    acc_gdf['longitude'] = acc_gdf['longitude'].astype(float)
+    # Process heat map data
+    pass
+    #heat_df = pd.DataFrame(result, columns=['latitude', 'longitude', 'weight'])
 
-    # Build heat dataframe used for mapping
-    heat_df = acc_gdf
-    heat_df = heat_df[['latitude', 'longitude']]
-    heat_df = heat_df.dropna(axis=0, subset=['latitude', 'longitude'])
-    heat_df = heat_df.dropna(axis=0, subset=['latitude', 'longitude'])
