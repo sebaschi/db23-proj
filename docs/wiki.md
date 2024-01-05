@@ -23,3 +23,14 @@ See ``requirements.txt``
 
 # Setting up postgres
 # Setting up pgadmin as container serverd by nginx
+
+# Load csv into db HOT FIX
+Go to directory containing the csvs.
+```bash
+cd group-1/src/datasets/integrated/ && psql -h localhost -d proj_db -U sebl -p 5433
+```
+Then manually copy
+```postgresql
+\copy FootBikeCount FROM 'FootBikeCount.csv' WITH CSV HEADER
+\copy mivcount FROM 'MivCount.csv' WITH CSV HEADER
+```
