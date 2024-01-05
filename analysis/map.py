@@ -1,11 +1,12 @@
 import pandas as pd
 import geopandas as gpd
-import os
+import colorsys
 import folium
 from folium import plugins
 import logging
 
 from folium.plugins import HeatMap
+from matplotlib import pyplot as plt
 
 from db_connector import RemoteDB
 import shapely
@@ -91,6 +92,8 @@ def create_heat_map_toggle(folium_map):
 
     add_heat_year_toggle(heat_gdf, folium_map)
 
+    add_bike_heat_toggle(folium_map)
+    add_ped_heat_map(folium_map)
     # Add signald speeds data
     add_signaled_speeds(folium_map)
 
@@ -113,11 +116,12 @@ def add_bike_heat_map_time(folium_map):
     index = [str(element) for element in index]
     index = [AccidentType + element for element in index]
     # plot heat map
+    gradient = generate_hue_gradient(0.6, 5)
     hm = plugins.HeatMapWithTime(heat_data,
                                  auto_play=False,
-                                 max_opacity=0.8,
+                                 max_opacity=1,
                                  gradient=gradient,
-                                 min_opacity=0.3,
+                                 min_opacity=0.5,
                                  radius=9,
                                  use_local_extrema=False,
                                  blur=1,
@@ -133,7 +137,7 @@ def add_pedestrian_heat_map_time(folium_map):
     heat_df = gpd.GeoDataFrame(pedestrian_heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
-    heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
+    heat_data = [[[row['latitude'], row['longitude'], 0.5] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
                  i in range(2011, 2023)]
     logger.debug(f"First element of PED heat data: {heat_data[0]}")
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
@@ -142,11 +146,12 @@ def add_pedestrian_heat_map_time(folium_map):
     index = [AccidentType + element for element in index]
     #gradient =
     # plot heat map
+    gradient = generate_hue_gradient(0.2, 5)
     hm = plugins.HeatMapWithTime(heat_data,
                                  auto_play=False,
-                                 max_opacity=0.8,
+                                 max_opacity=1,
                                  gradient=gradient,
-                                 min_opacity=0.3,
+                                 min_opacity=0.5,
                                  radius=9,
                                  use_local_extrema=False,
                                  blur=1,
@@ -156,7 +161,7 @@ def add_pedestrian_heat_map_time(folium_map):
 
 
 def add_heat_map_time(heat_df, folium_map):
-    heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
+    heat_data = [[[row['latitude'], row['longitude'], 0.5] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
                  i in range(2011, 2023)]
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
     # create heat map
@@ -170,7 +175,6 @@ def add_heat_map_time(heat_df, folium_map):
                                  use_local_extrema=False,
                                  blur=1,
                                  index=index,
-                                 overlay=False,
                                  name="Accident Heatmap ALL")
     hm.add_to(folium_map)
 
@@ -199,7 +203,7 @@ def add_signaled_speeds(folium_map):
         ).add_to(folium_map)
 
 
-def add_heat_year_toggle(heat_gdf, folium_map):
+def add_heat_year_toggle(heat_gdf, folium_map, name="All"):
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
     # plot heat map
     for year in index:
@@ -213,10 +217,25 @@ def add_heat_year_toggle(heat_gdf, folium_map):
             max_opacity=0.8,
             blur=10,
             show=False,
-            name=f'Accidents in {year}'
+            name=f'Accidents involving {name} in {year}'
         )
 
         heatmap_layer.add_to(folium_map)
+
+
+def add_bike_heat_toggle(folium_map):
+    bike_heat_view_data = get_view('bikeheat', 'latitude, longitude, year')
+    heat_gdf = gpd.GeoDataFrame(bike_heat_view_data, columns=['latitude', 'longitude', 'year'])
+    add_heat_year_toggle(heat_gdf, folium_map, name="motorcycles")
+
+
+def add_ped_heat_map(folium_map):
+    pedestrian_heat_view_data = get_view("pedestrianheat")
+    heat_gdf = gpd.GeoDataFrame(pedestrian_heat_view_data, columns=['latitude', 'longitude', 'year'])
+    add_heat_year_toggle(heat_gdf, folium_map, name="pedestrians")
+
+
+# Utilities ===========================================================================================================
 
 def save_map_as_html(folium_map, name):
     folium_map.save(f"{name}.html")
@@ -230,6 +249,27 @@ def setup_views():
     create_bike_heat_view()
     drop_view("pedestrianheat")
     create_pedestrian_heat_view()
+
+
+def generate_hue_gradient(hue, num_colors):
+    if num_colors < 2:
+        num_colors = 2
+    gradient = {}
+    for i in range(num_colors):
+        lightness = 0.1 + 0.8 * (i / (num_colors - 1))
+        saturation = 0.1 + 0.8 * (i / (num_colors - 1))
+        rgb = colorsys.hls_to_rgb(hue, lightness, saturation)
+        gradient[i / (num_colors - 1)] = '#{:02x}{:02x}{:02x}'.format(int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
+    return gradient
+
+def generate_contrasting_gradient(num_colors):
+    cmap = plt.get_cmap('viridis')      # viridis is a map with contrasting colors
+    gradient = {}
+    for i in range(num_colors):
+        rgba = cmap(i / (num_colors - 1))
+        gradient[i / (num_colors - 1)] = '#{:02x}{:02x}{:02x}'.format(int(rgba[0]*255), int(rgba[1]*255), int(rgba[2]*255))
+    return gradient
+
 
 
 if __name__ == "__main__":
