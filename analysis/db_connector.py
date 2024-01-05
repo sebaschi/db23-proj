@@ -48,12 +48,24 @@ class RemoteDB:
         except Exception as e:
             logger.exception(f"Connection failed: {e}")
 
-    def execute_query(self, query):
+    def execute_query(self, query: str):
         session = self.Session()
         try:
             result = session.execute(sqlalchemy.text(query))
             session.commit()
             return result.fetchall()
+        except Exception as e:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    def execute_command(self, cmd: str):
+        session = self.Session()
+        try:
+            result = session.execute(sqlalchemy.text(cmd))
+            session.commit()
+            logger.debug(f"Command {cmd} committed.")
         except Exception as e:
             session.rollback()
             raise
