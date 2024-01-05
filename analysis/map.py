@@ -77,6 +77,7 @@ color_dict = {
     "T100": "gray"
 }
 
+
 # Create Maps =========================================================================================================
 def create_heat_map_with_time():
 
@@ -107,9 +108,8 @@ def create_heat_map_toggle():
 
     folium.LayerControl(collapsed=True).add_to(interactive_map_toggle)
 
+
 # Layer Adding Methods ================================================================================================
-
-
 def add_heat_map_time(heat_df, map):
     heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
                  i in range(2011, 2023)]
@@ -151,6 +151,7 @@ def add_signaled_speeds(map):
             show=False,
             line_cap="butt",
         ).add_to(map)
+
 
 def add_heat_year_toggle(heat_gdf, map):
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]

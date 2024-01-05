@@ -8,6 +8,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
+
 # Generic DB Methods ==================================================================================================
 def drop_view(view_name):
     drop_view_sql = f"""
@@ -62,6 +63,7 @@ def create_heat_view():
     remote_db.close()
     logger.info("Heat View Created")
 
+
 def create_bike_heat_view():
     create_heat_view_sql = """
         CREATE VIEW bikeheat AS
@@ -82,6 +84,7 @@ def create_bike_heat_view():
     remote_db.execute_command(create_heat_view_sql)
     remote_db.close()
     logger.info("Heat View Created")
+
 
 def create_pedestrian_heat_view():
     create_heat_view_sql = """
