@@ -5,6 +5,7 @@ import folium
 from folium import plugins
 import logging
 from db_connector import RemoteDB
+import shapely
 from shapely import wkb
 import json
 
@@ -60,6 +61,22 @@ color_dict = {
     "T100": "gray"
 }
 
+def drop_heat_view():
+    drop_heat_view_sql = """
+    DROP VIEW IF EXISTS heat;
+    """
+
+    remote_db = RemoteDB()
+    try:
+        result = remote_db.execute_query(drop_heat_view_sql)
+        logger.info("Heat View dropped.")
+    except Exception as e:
+        logger.exception(f"Exception while dropping heat view. Msg: {e} ")
+    finally:
+        remote_db.close()
+        logger.debug(f"RemoteDB object closed.")
+
+
 
 def create_heat_view():
     create_heat_view_sql = """
@@ -77,13 +94,11 @@ def create_heat_view():
     """
 
     remote_db = RemoteDB()
-    remote_db.execute_query(create_heat_view_sql)
+    remote_db.execute_command(create_heat_view_sql)
     remote_db.close()
     logger.info("Heat View Created")\
 
 def get_heat_view():
-    #create_heat_view()
-
     get_heat_view_sql = """
     SELECT latitude, longitude, year
     FROM heat;
@@ -120,19 +135,21 @@ def create_heat_map_with_time():
                                  index=index,
                                  name="Accident Heatmap")
     hm.add_to(interactive_map)
+    interactive_map.save("test.html")
 
     # Add signald speeds data
     sig_speeds_data = get_signaled_speed_sql()
-    sig_speed_df = gpd.GeoDataFrame(sig_speeds_data, columns=['tempo','wkb_geometry'])
+    sig_speed_df = pd.DataFrame(sig_speeds_data, columns=['tempo','wkb_geometry'])
     sig_speed_df['geometry'] = sig_speed_df['wkb_geometry'].apply(lambda x: wkb.loads(x, hex=True))
-
+    logger.debug(f"{sig_speed_df.head()}")
+    sig_speed_gdf = gpd.GeoDataFrame(sig_speed_df, geometry="geometry")
 
     for speedlimit in speedLimits:
-        signal_speed = sig_speed_df[sig_speed_df["tempo"].str.contains(speedlimit, case=False)]
-        geometry = signal_speed['geometry']
+        signal_speed = sig_speed_gdf[sig_speed_gdf["tempo"].str.contains(speedlimit, case=False)]
+        geometries = json.loads(json.dumps(shapely.geometry.mapping(signal_speed['geometry'].unary_union)))
 
         folium.GeoJson(
-            data=geometry,
+            data=geometries,
             name=f'Signaled Speed {speedlimit}',
             color=color_dict[speedlimit],
             show=False,
@@ -140,6 +157,8 @@ def create_heat_map_with_time():
         ).add_to(interactive_map)
 
     folium.LayerControl(collapsed=True).add_to(interactive_map)
+    interactive_map.save("test.html")
+
 
 def get_signaled_speed_sql():
     sigspeed_sql = """
@@ -165,5 +184,7 @@ def save_map_as_html(map, name):
 
 
 if __name__ == "__main__":
+    drop_heat_view()
+    create_heat_view()
     create_heat_map_with_time()
     save_map_as_html(interactive_map, "heat_map_with_time")
