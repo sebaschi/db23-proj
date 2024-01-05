@@ -4,6 +4,9 @@ import os
 import folium
 from folium import plugins
 import logging
+
+from folium.plugins import HeatMap
+
 from db_connector import RemoteDB
 import shapely
 from shapely import wkb
@@ -49,10 +52,19 @@ interactive_map = folium.Map(
     tiles="cartodb positron"
 )
 
-speedLimits = ["T0","T10","T20","T30","T50","T60","T80","T100"]
+interactive_map_toggle = folium.Map(
+    location=zurich_coordinates,
+    zoom_start=13,
+    zoom_control=True,
+    dragging=True,
+    scrollWheelZoom=True,
+    doubleClickZoom=False,
+    tiles="cartodb positron"
+)
+
+speedLimits = ["T0","T20","T30","T50","T60","T80","T100"]
 color_dict = {
     "T0": "red",
-    "T10": "blue",
     "T20": "orange",
     "T30": "green",
     "T50": "yellow",
@@ -124,26 +136,38 @@ def create_heat_map_with_time():
     heat_df = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
+    add_heat_map_time(heat_df, interactive_map)
+    #interactive_map.save("test.html")
+
+    add_signaled_speeds(interactive_map)
+
+    folium.LayerControl(collapsed=True).add_to(interactive_map)
+
+
+def add_heat_map_time(heat_df, map):
     heat_data = [[[row['latitude'], row['longitude']] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
                  i in range(2011, 2023)]
-
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
     # plot heat map
     hm = plugins.HeatMapWithTime(heat_data,
                                  auto_play=False,
+                                 gradient=gradient,
+                                 min_opacity=0.5,
                                  max_opacity=0.8,
+                                 blur=10,
+                                 radius=8,
                                  index=index,
                                  name="Accident Heatmap")
-    hm.add_to(interactive_map)
-    interactive_map.save("test.html")
+    hm.add_to(map)
 
+
+def add_signaled_speeds(map):
     # Add signald speeds data
     sig_speeds_data = get_signaled_speed_sql()
-    sig_speed_df = pd.DataFrame(sig_speeds_data, columns=['tempo','wkb_geometry'])
+    sig_speed_df = pd.DataFrame(sig_speeds_data, columns=['tempo', 'wkb_geometry'])
     sig_speed_df['geometry'] = sig_speed_df['wkb_geometry'].apply(lambda x: wkb.loads(x, hex=True))
     logger.debug(f"{sig_speed_df.head()}")
     sig_speed_gdf = gpd.GeoDataFrame(sig_speed_df, geometry="geometry")
-
     for speedlimit in speedLimits:
         signal_speed = sig_speed_gdf[sig_speed_gdf["tempo"].str.contains(speedlimit, case=False)]
         geometries = json.loads(json.dumps(shapely.geometry.mapping(signal_speed['geometry'].unary_union)))
@@ -154,10 +178,42 @@ def create_heat_map_with_time():
             color=color_dict[speedlimit],
             show=False,
             line_cap="butt",
-        ).add_to(interactive_map)
+        ).add_to(map)
 
-    folium.LayerControl(collapsed=True).add_to(interactive_map)
-    interactive_map.save("test.html")
+
+def create_heat_map_toggle():
+
+    heat_view_data = get_heat_view()
+    heat_gdf = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
+
+    assert not heat_gdf.empty, f" Heat Dataframe is empty: {heat_gdf.head(5)}"
+
+    add_heat_year_toggle(heat_gdf, interactive_map_toggle)
+
+    # Add signald speeds data
+    add_signaled_speeds(interactive_map_toggle)
+
+    folium.LayerControl(collapsed=True).add_to(interactive_map_toggle)
+
+
+def add_heat_year_toggle(heat_gdf, map):
+    index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
+    # plot heat map
+    for year in index:
+        year_data = heat_gdf[heat_gdf['year'] == year]
+
+        heatmap_layer = HeatMap(
+            data=year_data[['latitude', 'longitude']],
+            radius=8,
+            gradient=gradient,
+            min_opacity=0.5,
+            max_opacity=0.8,
+            blur=10,
+            show=False,
+            name=f'Accidents in {year}'
+        )
+
+        heatmap_layer.add_to(map)
 
 
 def get_signaled_speed_sql():
@@ -187,4 +243,6 @@ if __name__ == "__main__":
     drop_heat_view()
     create_heat_view()
     create_heat_map_with_time()
-    save_map_as_html(interactive_map, "heat_map_with_time")
+    save_map_as_html(interactive_map, "heat_map_time")
+    create_heat_map_toggle()
+    save_map_as_html(interactive_map_toggle, "heat_map_toggle")
