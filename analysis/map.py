@@ -156,7 +156,7 @@ def add_heat_map_time(heat_df, map):
                                  max_opacity=0.8,
                                  gradient=gradient,
                                  min_opacity=0.3,
-                                 radius=8,
+                                 radius=9,
                                  use_local_extrema=False,
                                  blur=1,
                                  index=index,
