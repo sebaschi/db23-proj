@@ -137,7 +137,7 @@ def create_heat_map_with_time():
     heat_df = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
-    add_heat_map_time(heat_df)
+    add_heat_map_time(heat_df, interactive_map)
     #interactive_map.save("test.html")
 
     add_signaled_speeds(interactive_map)
@@ -145,7 +145,7 @@ def create_heat_map_with_time():
     folium.LayerControl(collapsed=True).add_to(interactive_map)
 
 
-def add_heat_map_time(heat_df):
+def add_heat_map_time(heat_df, map):
     heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
                  i in range(2011, 2023)]
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
@@ -161,7 +161,7 @@ def add_heat_map_time(heat_df):
                                  blur=1,
                                  index=index,
                                  name="Accident Heatmap")
-    hm.add_to(interactive_map)
+    hm.add_to(map)
 
 
 def add_signaled_speeds(map):
