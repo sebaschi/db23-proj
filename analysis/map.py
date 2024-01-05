@@ -62,6 +62,7 @@ interactive_map_toggle = folium.Map(
     tiles="cartodb positron"
 )
 
+
 speedLimits = ["T0","T20","T30","T50","T60","T80","T100"]
 color_dict = {
     "T0": "red",
@@ -80,7 +81,7 @@ def drop_heat_view():
 
     remote_db = RemoteDB()
     try:
-        result = remote_db.execute_query(drop_heat_view_sql)
+        result = remote_db.execute_command(drop_heat_view_sql)
         logger.info("Heat View dropped.")
     except Exception as e:
         logger.exception(f"Exception while dropping heat view. Msg: {e} ")
@@ -136,7 +137,7 @@ def create_heat_map_with_time():
     heat_df = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
-    add_heat_map_time(heat_df, interactive_map)
+    add_heat_map_time(heat_df)
     #interactive_map.save("test.html")
 
     add_signaled_speeds(interactive_map)
@@ -144,21 +145,23 @@ def create_heat_map_with_time():
     folium.LayerControl(collapsed=True).add_to(interactive_map)
 
 
-def add_heat_map_time(heat_df, map):
-    heat_data = [[[row['latitude'], row['longitude']] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
+def add_heat_map_time(heat_df):
+    heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
                  i in range(2011, 2023)]
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
-    # plot heat map
+    # create heat map
+    logger.debug(f"First element of heat data: {heat_data[0]}")
     hm = plugins.HeatMapWithTime(heat_data,
                                  auto_play=False,
-                                 gradient=gradient,
-                                 min_opacity=0.5,
                                  max_opacity=0.8,
-                                 blur=10,
+                                 gradient=gradient,
+                                 min_opacity=0.3,
                                  radius=8,
+                                 use_local_extrema=False,
+                                 blur=1,
                                  index=index,
                                  name="Accident Heatmap")
-    hm.add_to(map)
+    hm.add_to(interactive_map)
 
 
 def add_signaled_speeds(map):
@@ -244,5 +247,5 @@ if __name__ == "__main__":
     create_heat_view()
     create_heat_map_with_time()
     save_map_as_html(interactive_map, "heat_map_time")
-    create_heat_map_toggle()
-    save_map_as_html(interactive_map_toggle, "heat_map_toggle")
+    #create_heat_map_toggle()
+    #save_map_as_html(interactive_map_toggle, "heat_map_toggle")
