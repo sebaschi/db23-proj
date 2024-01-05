@@ -12,6 +12,9 @@ import shapely
 from shapely import wkb
 import json
 
+## MUST IMPORT otherwise contains the functions used in db interaction
+from db_utils import *
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('map.py')
 stream_handler = logging.StreamHandler()
@@ -74,66 +77,12 @@ color_dict = {
     "T100": "gray"
 }
 
-def drop_heat_view():
-    drop_heat_view_sql = """
-    DROP VIEW IF EXISTS heat;
-    """
-
-    remote_db = RemoteDB()
-    try:
-        result = remote_db.execute_command(drop_heat_view_sql)
-        logger.info("Heat View dropped.")
-    except Exception as e:
-        logger.exception(f"Exception while dropping heat view. Msg: {e} ")
-    finally:
-        remote_db.close()
-        logger.debug(f"RemoteDB object closed.")
-
-
-
-def create_heat_view():
-    create_heat_view_sql = """
-        CREATE VIEW heat AS
-    SELECT
-        ST_Y(geometry) AS latitude,
-        ST_X(geometry) AS longitude,
-        AccidentYear AS year
-    FROM
-        accidents
-    WHERE
-        ST_Y(geometry) IS NOT NULL AND
-        ST_X(geometry) IS NOT NULL AND
-        AccidentYear IS NOT NULL;
-    """
-
-    remote_db = RemoteDB()
-    remote_db.execute_command(create_heat_view_sql)
-    remote_db.close()
-    logger.info("Heat View Created")\
-
-def get_heat_view():
-    get_heat_view_sql = """
-    SELECT latitude, longitude, year
-    FROM heat;
-    """
-
-    remote_db = RemoteDB()
-
-    # Get heat map data from database
-    try:
-        result = remote_db.execute_query(get_heat_view_sql)
-        logger.info(f"Succesfully retrieved result")
-        return result
-    except Exception as e:
-        logger.exception(f"Failed getting result with exception {e}")
-    finally:
-        remote_db.close()
-
+# Create Maps =========================================================================================================
 def create_heat_map_with_time():
 
 
     # Process heat map data
-    heat_view_data = get_heat_view()
+    heat_view_data = get_view("heat")
     heat_df = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
@@ -143,6 +92,22 @@ def create_heat_map_with_time():
     add_signaled_speeds(interactive_map)
 
     folium.LayerControl(collapsed=True).add_to(interactive_map)
+
+def create_heat_map_toggle():
+
+    heat_view_data = get_view("heat")
+    heat_gdf = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
+
+    assert not heat_gdf.empty, f" Heat Dataframe is empty: {heat_gdf.head(5)}"
+
+    add_heat_year_toggle(heat_gdf, interactive_map_toggle)
+
+    # Add signald speeds data
+    add_signaled_speeds(interactive_map_toggle)
+
+    folium.LayerControl(collapsed=True).add_to(interactive_map_toggle)
+
+# Layer Adding Methods ================================================================================================
 
 
 def add_heat_map_time(heat_df, map):
@@ -166,7 +131,11 @@ def add_heat_map_time(heat_df, map):
 
 def add_signaled_speeds(map):
     # Add signald speeds data
-    sig_speeds_data = get_signaled_speed_sql()
+    rows = """
+            temporegime_technical as tempo, 
+            wkb_geometry
+    """
+    sig_speeds_data = get_view("signaled_speeds", rows)
     sig_speed_df = pd.DataFrame(sig_speeds_data, columns=['tempo', 'wkb_geometry'])
     sig_speed_df['geometry'] = sig_speed_df['wkb_geometry'].apply(lambda x: wkb.loads(x, hex=True))
     logger.debug(f"{sig_speed_df.head()}")
@@ -182,22 +151,6 @@ def add_signaled_speeds(map):
             show=False,
             line_cap="butt",
         ).add_to(map)
-
-
-def create_heat_map_toggle():
-
-    heat_view_data = get_heat_view()
-    heat_gdf = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
-
-    assert not heat_gdf.empty, f" Heat Dataframe is empty: {heat_gdf.head(5)}"
-
-    add_heat_year_toggle(heat_gdf, interactive_map_toggle)
-
-    # Add signald speeds data
-    add_signaled_speeds(interactive_map_toggle)
-
-    folium.LayerControl(collapsed=True).add_to(interactive_map_toggle)
-
 
 def add_heat_year_toggle(heat_gdf, map):
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
@@ -219,31 +172,13 @@ def add_heat_year_toggle(heat_gdf, map):
         heatmap_layer.add_to(map)
 
 
-def get_signaled_speed_sql():
-    sigspeed_sql = """
-    SELECT 
-        temporegime_technical as tempo, 
-        wkb_geometry
-    FROM signaled_speeds;
-    """
-    remote_db = RemoteDB()
-    try:
-        result = remote_db.execute_query(sigspeed_sql)
-        logger.info(f"Succesfully retrieved result")
-        return result
-    except Exception as e:
-        logger.exception(f"Failed getting result with exception {e}")
-    finally:
-        remote_db.close()
-
-
 def save_map_as_html(map, name):
     map.save(f"{name}.html")
     logger.info(f"Succesfully saved map {name}.")
 
 
 if __name__ == "__main__":
-    drop_heat_view()
+    drop_view("heat")
     create_heat_view()
     create_heat_map_with_time()
     save_map_as_html(interactive_map, "heat_map_time")
