@@ -17,7 +17,7 @@ def drop_view(view_name):
 
     remote_db = RemoteDB()
     try:
-        result = remote_db.execute_query(drop_view_sql)
+        result = remote_db.execute_command(drop_view_sql)
         logger.info(f"{view_name} dropped.")
     except Exception as e:
         logger.exception(f"Exception while dropping {view_name}. Msg: {e} ")
@@ -83,7 +83,7 @@ def create_bike_heat_view():
     remote_db = RemoteDB()
     remote_db.execute_command(create_heat_view_sql)
     remote_db.close()
-    logger.info("Heat View Created")
+    logger.info("BIKE Heat View Created")
 
 
 def create_pedestrian_heat_view():
@@ -105,4 +105,26 @@ def create_pedestrian_heat_view():
     remote_db = RemoteDB()
     remote_db.execute_command(create_heat_view_sql)
     remote_db.close()
-    logger.info("Heat View Created")
+    logger.info("PEDESTRIAN Heat View Created")
+
+
+def create_motorcycle_heat_view():
+    create_heat_view_sql = """
+        CREATE VIEW motoheat AS
+    SELECT
+        ST_Y(geometry) AS latitude,
+        ST_X(geometry) AS longitude,
+        AccidentYear AS year
+    FROM
+        accidents
+    WHERE
+        ST_Y(geometry) IS NOT NULL AND
+        ST_X(geometry) IS NOT NULL AND
+        AccidentYear IS NOT NULL AND
+        accidentinvolvingpedestrian IS TRUE;
+    """
+
+    remote_db = RemoteDB()
+    remote_db.execute_command(create_heat_view_sql)
+    remote_db.close()
+    logger.info("MOTO Heat View Created")

@@ -45,27 +45,6 @@ gradient = {
     0.9: 'red'
 }
 
-interactive_map = folium.Map(
-    location=zurich_coordinates,
-    zoom_start=13,
-    zoom_control=True,
-    dragging=True,
-    scrollWheelZoom=True,
-    doubleClickZoom=False,
-    tiles="cartodb positron"
-)
-
-interactive_map_toggle = folium.Map(
-    location=zurich_coordinates,
-    zoom_start=13,
-    zoom_control=True,
-    dragging=True,
-    scrollWheelZoom=True,
-    doubleClickZoom=False,
-    tiles="cartodb positron"
-)
-
-
 speedLimits = ["T0","T20","T30","T50","T60","T80","T100"]
 color_dict = {
     "T0": "red",
@@ -79,38 +58,104 @@ color_dict = {
 
 
 # Create Maps =========================================================================================================
-def create_heat_map_with_time():
-
+def create_heat_map_with_time(folium_map):
 
     # Process heat map data
     heat_view_data = get_view("heat")
     heat_df = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
-    add_heat_map_time(heat_df, interactive_map)
+    add_heat_map_time(heat_df, folium_map)
+    logger.info(f"Heat map time added to time map.")
     #interactive_map.save("test.html")
 
-    add_signaled_speeds(interactive_map)
+    add_signaled_speeds(folium_map)
 
-    folium.LayerControl(collapsed=True).add_to(interactive_map)
+    # Add bikes
 
-def create_heat_map_toggle():
+    add_bike_heat_map_time(folium_map)
+
+    #Pedestrian Part
+
+    add_pedestrian_heat_map_time(folium_map)
+
+    folium.LayerControl(collapsed=True).add_to(folium_map)
+
+
+def create_heat_map_toggle(folium_map):
 
     heat_view_data = get_view("heat")
     heat_gdf = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not heat_gdf.empty, f" Heat Dataframe is empty: {heat_gdf.head(5)}"
 
-    add_heat_year_toggle(heat_gdf, interactive_map_toggle)
+    add_heat_year_toggle(heat_gdf, folium_map)
 
     # Add signald speeds data
-    add_signaled_speeds(interactive_map_toggle)
+    add_signaled_speeds(folium_map)
 
-    folium.LayerControl(collapsed=True).add_to(interactive_map_toggle)
+    folium.LayerControl(collapsed=True).add_to(folium_map)
 
 
 # Layer Adding Methods ================================================================================================
-def add_heat_map_time(heat_df, map):
+def add_bike_heat_map_time(folium_map):
+
+    # Process heat map data
+    bike_heat_view_data = get_view('bikeheat', 'latitude, longitude, year')
+    bike_heat_df = gpd.GeoDataFrame(bike_heat_view_data, columns=['latitude', 'longitude', 'year'])
+
+    assert not bike_heat_df.empty, f" Heat Dataframe is empty: {bike_heat_df.head(5)}"
+    heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in bike_heat_df[bike_heat_df['year'] == i].iterrows()] for
+                 i in range(2011, 2023)]
+    logger.debug(f"First element of heat data: {heat_data[0]}")
+    index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
+    AccidentType = "Bicycles: "
+    index = [str(element) for element in index]
+    index = [AccidentType + element for element in index]
+    # plot heat map
+    hm = plugins.HeatMapWithTime(heat_data,
+                                 auto_play=False,
+                                 max_opacity=0.8,
+                                 gradient=gradient,
+                                 min_opacity=0.3,
+                                 radius=9,
+                                 use_local_extrema=False,
+                                 blur=1,
+                                 index=index,
+                                 name="Accident Heatmap Bikes")
+    hm.add_to(folium_map)
+
+
+def add_pedestrian_heat_map_time(folium_map):
+
+    # Process heat map data
+    pedestrian_heat_view_data = get_view("pedestrianheat")
+    heat_df = gpd.GeoDataFrame(pedestrian_heat_view_data, columns=['latitude', 'longitude', 'year'])
+
+    assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
+    heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
+                 i in range(2011, 2023)]
+    logger.debug(f"First element of PED heat data: {heat_data[0]}")
+    index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
+    AccidentType = "Pedestrians: "
+    index = [str(element) for element in index]
+    index = [AccidentType + element for element in index]
+    #gradient =
+    # plot heat map
+    hm = plugins.HeatMapWithTime(heat_data,
+                                 auto_play=False,
+                                 max_opacity=0.8,
+                                 gradient=gradient,
+                                 min_opacity=0.3,
+                                 radius=9,
+                                 use_local_extrema=False,
+                                 blur=1,
+                                 index=index,
+                                 name="Accident Heatmap Pedestrian")
+    hm.add_to(folium_map)
+
+
+def add_heat_map_time(heat_df, folium_map):
     heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
                  i in range(2011, 2023)]
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
@@ -125,11 +170,12 @@ def add_heat_map_time(heat_df, map):
                                  use_local_extrema=False,
                                  blur=1,
                                  index=index,
-                                 name="Accident Heatmap")
-    hm.add_to(map)
+                                 overlay=False,
+                                 name="Accident Heatmap ALL")
+    hm.add_to(folium_map)
 
 
-def add_signaled_speeds(map):
+def add_signaled_speeds(folium_map):
     # Add signald speeds data
     rows = """
             temporegime_technical as tempo, 
@@ -150,10 +196,10 @@ def add_signaled_speeds(map):
             color=color_dict[speedlimit],
             show=False,
             line_cap="butt",
-        ).add_to(map)
+        ).add_to(folium_map)
 
 
-def add_heat_year_toggle(heat_gdf, map):
+def add_heat_year_toggle(heat_gdf, folium_map):
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
     # plot heat map
     for year in index:
@@ -170,18 +216,48 @@ def add_heat_year_toggle(heat_gdf, map):
             name=f'Accidents in {year}'
         )
 
-        heatmap_layer.add_to(map)
+        heatmap_layer.add_to(folium_map)
 
-
-def save_map_as_html(map, name):
-    map.save(f"{name}.html")
+def save_map_as_html(folium_map, name):
+    folium_map.save(f"{name}.html")
     logger.info(f"Succesfully saved map {name}.")
 
 
-if __name__ == "__main__":
+def setup_views():
     drop_view("heat")
     create_heat_view()
-    create_heat_map_with_time()
-    save_map_as_html(interactive_map, "heat_map_time")
-    #create_heat_map_toggle()
-    #save_map_as_html(interactive_map_toggle, "heat_map_toggle")
+    drop_view("bikeheat")
+    create_bike_heat_view()
+    drop_view("pedestrianheat")
+    create_pedestrian_heat_view()
+
+
+if __name__ == "__main__":
+    time_map = folium.Map(
+        location=zurich_coordinates,
+        zoom_start=13,
+        zoom_control=True,
+        dragging=True,
+        scrollWheelZoom=True,
+        doubleClickZoom=False,
+        tiles="cartodb positron"
+    )
+
+    toggle_map = folium.Map(
+        location=zurich_coordinates,
+        zoom_start=13,
+        zoom_control=True,
+        dragging=True,
+        scrollWheelZoom=True,
+        doubleClickZoom=False,
+        tiles="cartodb positron"
+    )
+
+    #setup_views()
+
+    create_heat_map_with_time(time_map)
+    create_heat_map_toggle(toggle_map)
+
+    ## Save Maps ============================================================================================
+    save_map_as_html(toggle_map, "heat_map_toggle")
+    save_map_as_html(time_map, "heat_map_time")
