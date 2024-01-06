@@ -93,7 +93,7 @@ def create_heat_map_toggle(folium_map):
     add_heat_year_toggle(heat_gdf, folium_map)
 
     add_bike_heat_toggle(folium_map)
-    add_ped_heat_map(folium_map)
+    add_ped_heat_toggle(folium_map)
     # Add signald speeds data
     add_signaled_speeds(folium_map)
 
@@ -217,7 +217,7 @@ def add_heat_year_toggle(heat_gdf, folium_map, name="All"):
             max_opacity=0.8,
             blur=10,
             show=False,
-            name=f'Accidents involving {name} in {year}'
+            name=f'{name} in {year}'
         )
 
         heatmap_layer.add_to(folium_map)
@@ -229,7 +229,7 @@ def add_bike_heat_toggle(folium_map):
     add_heat_year_toggle(heat_gdf, folium_map, name="motorcycles")
 
 
-def add_ped_heat_map(folium_map):
+def add_ped_heat_toggle(folium_map):
     pedestrian_heat_view_data = get_view("pedestrianheat")
     heat_gdf = gpd.GeoDataFrame(pedestrian_heat_view_data, columns=['latitude', 'longitude', 'year'])
     add_heat_year_toggle(heat_gdf, folium_map, name="pedestrians")

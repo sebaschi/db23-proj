@@ -41,6 +41,9 @@ def get_view(view_name, rows="*"):
     finally:
         remote_db.close()
 
+def query_table(table_name):
+    pass
+
 
 # Specialized DB methods ==============================================================================================
 def create_heat_view():

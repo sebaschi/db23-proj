@@ -1,11 +1,13 @@
 import logging
 
+import paramiko.util
 import sqlalchemy
 from sshtunnel import SSHTunnelForwarder
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from config import SSH_HOST, SSH_USERNAME, SSH_PASSWORD, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, SSH_PORT
 
+logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('db_connector.py')
