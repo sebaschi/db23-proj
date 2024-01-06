@@ -10,7 +10,7 @@ import numpy as np
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 
-# TODO
+# Summary charts ======================================================================================================
 def plt_acc_by_year(db):
     acc_year_sql = """
     SELECT COUNT(*), accidentyear FROM accidents
@@ -64,6 +64,25 @@ def plt_acc_by_daytime(db):
     fig = px.bar(result_df, y='hour', x='count', orientation='h')
     fig.write_image("fig/acc_by_day.png")
     fig.write_html("html/acc_by_day.html")
+
+# Time Series charts ==================================================================================================
+def acc_by_type():
+    pass
+
+def severity_by_year():
+    pass
+
+def ped_by_month():
+    pass
+
+def bike_by_month():
+    pass
+
+
+def severity_by_month():
+    pass
+
+
 
 
 # Utilities ===========================================================================================================
