@@ -22,10 +22,10 @@ Make sure db_info contain the correct credentials
 """
 db_info = {
     'host': 'localhost',
-    'database': 'test-db23',
-    'port': '5432',
-    'user': 'seb',
-    'password': '',
+    'database': 'proj_db',
+    'port': '5433',
+    'user': 'sebl',
+    'password': 'hatred-pollute-digraph-disciple',
 }
 setup_tables_script = 'setup_tables.sql'
 load_csvs_into_db_script = 'load_csvs_into_db.sql'
@@ -98,11 +98,11 @@ if __name__ == '__main__':
                               db_info['port'],
                               accident_table_name)
     logger.info('Finished loading accident geojson into db using bash script.')
-    geojson_loader(signaled_speeds_file,
+    run_geojson_loader_script(accident_loader_script,
+                   signaled_speeds_file,
                    db_info['database'],
                    db_info['user'],
                    db_info['password'],
                    db_info['host'],
                    db_info['port'],
-                   signaled_speeds_table_name,
-                   modus='overwrite')
+                   signaled_speeds_table_name)

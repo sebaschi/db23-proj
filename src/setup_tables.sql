@@ -6,6 +6,8 @@ DROP TABLE IF EXISTS Accidents;
 
 DROP TABLE IF EXISTS MivCount;
 
+drop table if exists signaled_speeds;
+
 
 CREATE TABLE FootBikeCount (
     ID INTEGER ,
@@ -69,4 +71,20 @@ CREATE TABLE Accidents (
     PRIMARY KEY (AccidentUID) ,
     CHECK ( AccidentHour BETWEEN 0 AND 23) ,
     CHECK (AccidentWeekDay_en IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))
+);
+-- Ad hoc via generate sql functionality in pycharm
+create table signaled_speeds
+(
+    id                    serial
+        primary key,
+    ausnahmen_fahrverbot  varchar,
+    fahrverbot_ssv        varchar,
+    lokalisationsname     varchar,
+    objectid              double precision,
+    publiziert_vsi_datum  timestamp with time zone,
+    rechtskraeftig_datum  timestamp with time zone,
+    temporegime           varchar,
+    temporegime_technical varchar,
+    umgesetzt_datum       timestamp with time zone,
+    wkb_geometry          geometry(Point, 4326) --changed from MultiLineString
 );

@@ -15,7 +15,8 @@ db23-project-venv/
 *.tax2010
 *.vcf
 *.xml
-
+#
+analysis/config.py
 ### Database ###
 *.accdb
 *.db

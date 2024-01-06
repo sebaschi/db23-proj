@@ -130,6 +130,26 @@ def load_file_from_api(api_link, target_name, integrated_dir):
 def save_dataframe_to_csv(df, integrated_dir, filename):
     pass
 
+# Needed Since we converted strings all to True
+def convert_to_boolean(value):
+    true_values = ['true', '1', 'yes']
+    false_values = ['false', '0', 'no']
+
+    if isinstance(value, str):
+        value = value.lower()
+        if value in true_values:
+            return True
+        elif value in false_values:
+            return False
+        else:
+            raise ValueError(f"Invalid boolean string: {value}")
+
+    if isinstance(value, (int, float)):
+        return bool(value)
+
+    raise ValueError(f"Invalid boolean value type: {type(value)}")
+
+
 
 if __name__ == "__main__":
     csv_urls_file = '../docs/all_csv_urls.txt'

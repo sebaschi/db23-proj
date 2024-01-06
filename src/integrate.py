@@ -113,7 +113,7 @@ def process_foot_bike_data(files_present=True):
     }).reset_index()
     dt_obj = pd.to_datetime(fb_df_grouped['DATE'])
     days = dt_obj.dt.weekday
-    fb_df_grouped['Weekday_en'] = days.map(lambda x: weekday_names[x])
+    fb_df_grouped.loc[:,'Weekday_en'] = days.map(lambda x: weekday_names[x])
     cleaned_fb_df = fb_df_grouped
     cleaned_fb_df['ID'] = cleaned_fb_df.index + 1
     cleaned_fb_df = cleaned_fb_df[['ID', 'NORD', 'OST', 'DATE', 'HRS', 'VELO_IN', 'VELO_OUT', 'FUSS_IN',
@@ -125,20 +125,20 @@ def process_foot_bike_data(files_present=True):
 
 def process_miv_data(files_present=True):
     miv_df_unified = du.create_unified_df(miv_file_urls, motor_file_u_string, data_dir, files_present=files_present)
-
+    logger.debug("Unified MIV dataframe created.")
     miv_df_unified[['Datum', "Time"]] = miv_df_unified['MessungDatZeit'].str.split('T', expand=True)
     miv_df_unified[['Hrs', 'Mins', 'Sec']] = miv_df_unified['Time'].str.split(':', expand=True)
 
     miv_cols_to_keep = ['MSID','ZSID','Achse', 'NKoord', 'EKoord',  'Richtung', 'AnzFahrzeuge', 'AnzFahrzeugeStatus',
                         'Datum', 'Hrs',]
-    miv_df_cols_dropped = miv_df_unified[miv_cols_to_keep]
+    miv_df_cols_dropped = miv_df_unified[miv_cols_to_keep].copy()
 
     dt_obj = pd.to_datetime(miv_df_cols_dropped['Datum'])
     days = dt_obj.dt.weekday
     miv_df_cols_dropped.loc[:, 'Weekday_en'] = days.map(lambda x: weekday_names[x])
 
     miv_df_cols_dropped.loc[:, 'AnzFahrzeuge'] = miv_df_cols_dropped['AnzFahrzeuge'].fillna(0).astype(int)
-    miv_df_cols_dropped[:, 'ZSID'] = miv_df_cols_dropped['ZSID'].fillna('Missing').astype(str)
+    miv_df_cols_dropped.loc[:, 'ZSID'] = miv_df_cols_dropped['ZSID'].fillna('Missing').astype(str)
     miv_df_cols_dropped['ID'] = (miv_df_cols_dropped.index + 1).copy()
 
     cleaned_miv_df = miv_df_cols_dropped[['ID', 'MSID', 'ZSID', 'Achse', 'NKoord', 'EKoord', 'Richtung', 'AnzFahrzeuge',
@@ -153,12 +153,18 @@ def process_accident_data(file_present: bool = True):
     if not file_present:
         du.process_urls(data_dir, accident_file_url)
     acc_df_unified = du.load_dataframes_from_geojson_files(data_dir, accident_file_u_string)
+    logger.debug(acc_df_unified[['AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
+                        'AccidentInvolvingMotorcycle']].head())
     acc_cols_to_keep = ['AccidentUID', 'AccidentYear', 'AccidentMonth', 'AccidentWeekDay_en','AccidentHour',
                         'AccidentLocation_CHLV95_N', 'AccidentLocation_CHLV95_E', 'AccidentType_en', 'AccidentType',
                         'AccidentSeverityCategory', 'AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
                         'AccidentInvolvingMotorcycle', 'RoadType', 'RoadType_en',
                         'geometry']
-    cleaned_acc_df = acc_df_unified[acc_cols_to_keep]
+    # Need to already convert boolean strings "by hand", otherwise all will become 'True'
+    for col in ['AccidentInvolvingPedestrian', 'AccidentInvolvingBicycle',
+                        'AccidentInvolvingMotorcycle']:
+        acc_df_unified[col] = acc_df_unified[col].apply(du.convert_to_boolean)
+    cleaned_acc_df = acc_df_unified[acc_cols_to_keep].copy()
     cleaned_acc_df.rename(columns={
         'AccidentLocation_CHLV95_E': 'EKoord',
         'AccidentLocation_CHLV95_N': 'NKoord',
@@ -180,7 +186,7 @@ def process_all_data_sources(fb_present=True, miv_present=True, accident_present
     """
     # ensure_dirs_exist(data_dir, integrated_dir)
     logger.info("Started processing all data sources.")
-    fb_to_integrated(fb_present)
+    #fb_to_integrated(fb_present)
 
     miv_to_integrated_csv(miv_present)
 
@@ -239,7 +245,8 @@ def load_tempo_geojson_from_api_to_local():
 
 if __name__ == '__main__':
     # ensure_dirs_exist(data_dir, integrated_dir, logs_dir)
-    # process_all_data_sources(True, True, True)
+    #process_accident_data()
+    #process_all_data_sources(True, True, False)
     # miv_to_integrated_csv()
-    # acc_to_cleaned_geojson()
-    load_tempo_geojson_from_api_to_local()
+    acc_to_cleaned_geojson()
+    #load_tempo_geojson_from_api_to_local()
