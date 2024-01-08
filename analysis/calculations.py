@@ -15,7 +15,7 @@ def is_point_near_multilinestring(point, multilinestring, threshold_distance):
     return point_geometry.distance(multilinestring) < threshold_distance
 
 
-def get_data(db):
+def calculate_accidents_per_sigspeed(db):
     get_speeds_sql = """
     SELECT wkb_geometry,
        temporegime_technical
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     remote_db = RemoteDB()
 
     try:
-        #get_data(remote_db)
+        calculate_accidents_per_sigspeed(remote_db)
         calculate_sigspeed_length(remote_db)
     except Exception as e:
         print(f"Exception {e} in calculations.py")
