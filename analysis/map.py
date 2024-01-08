@@ -271,7 +271,6 @@ def generate_contrasting_gradient(num_colors):
     return gradient
 
 
-
 if __name__ == "__main__":
     time_map = folium.Map(
         location=zurich_coordinates,
@@ -299,5 +298,35 @@ if __name__ == "__main__":
     create_heat_map_toggle(toggle_map)
 
     ## Save Maps ============================================================================================
-    save_map_as_html(toggle_map, "heat_map_toggle")
+    save_map_as_html(toggle_map, "html/heat_map_toggle")
     save_map_as_html(time_map, "html/heat_map_time")
+
+    ## Create Maps with fixed center=============================================================================
+    time_map_fix = folium.Map(
+        location=zurich_coordinates,
+        zoom_start=13,
+        zoom_control=True,
+        dragging=False,
+        scrollWheelZoom=True,
+        doubleClickZoom=False,
+        tiles="cartodb positron"
+    )
+
+    toggle_map_fix = folium.Map(
+        location=zurich_coordinates,
+        zoom_start=13,
+        zoom_control=True,
+        dragging=False,
+        scrollWheelZoom=True,
+        doubleClickZoom=False,
+        tiles="cartodb positron"
+    )
+
+    #setup_views()
+
+    create_heat_map_with_time(time_map_fix)
+    create_heat_map_toggle(toggle_map_fix)
+
+    ## Save Maps ============================================================================================
+    save_map_as_html(toggle_map_fix, "html/heat_map_toggle_fix")
+    save_map_as_html(time_map_fix, "html/heat_map_time_fix")
