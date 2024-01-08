@@ -3,6 +3,7 @@ import geopandas as gpd
 import colorsys
 import folium
 from folium import plugins
+from pyproj import CRS, Transformer
 import logging
 
 from folium.plugins import HeatMap
@@ -23,12 +24,11 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
-
 accidents_filepath = "../src/datasets/integrated/Accidents.geojson"
 signaled_speeds_filepath = "../src/datasets/integrated/signaled_speeds.geojson.geojson"
 
 # Map centered around zurich
-zurich_coordinates = [47.368650,  	8.539183]
+zurich_coordinates = [47.368650, 8.539183]
 fixed_map_zurich_original_coords = folium.Map(
     location=zurich_coordinates,
     zoom_start=13,
@@ -46,7 +46,7 @@ gradient = {
     0.9: 'red'
 }
 
-speedLimits = ["T0","T20","T30","T50","T60","T80","T100"]
+speedLimits = ["T0", "T20", "T30", "T50", "T60", "T80", "T100"]
 color_dict = {
     "T0": "red",
     "T20": "orange",
@@ -60,7 +60,6 @@ color_dict = {
 
 # Create Maps =========================================================================================================
 def create_heat_map_with_time(folium_map):
-
     # Process heat map data
     heat_view_data = get_view("heat")
     heat_df = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
@@ -68,7 +67,7 @@ def create_heat_map_with_time(folium_map):
     assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
     add_heat_map_time(heat_df, folium_map)
     logger.info(f"Heat map time added to time map.")
-    #interactive_map.save("test.html")
+    # interactive_map.save("test.html")
 
     add_signaled_speeds(folium_map)
 
@@ -76,7 +75,7 @@ def create_heat_map_with_time(folium_map):
 
     add_bike_heat_map_time(folium_map)
 
-    #Pedestrian Part
+    # Pedestrian Part
 
     add_pedestrian_heat_map_time(folium_map)
 
@@ -84,7 +83,6 @@ def create_heat_map_with_time(folium_map):
 
 
 def create_heat_map_toggle(folium_map):
-
     heat_view_data = get_view("heat")
     heat_gdf = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
 
@@ -102,14 +100,15 @@ def create_heat_map_toggle(folium_map):
 
 # Layer Adding Methods ================================================================================================
 def add_bike_heat_map_time(folium_map):
-
     # Process heat map data
     bike_heat_view_data = get_view('bikeheat', 'latitude, longitude, year')
     bike_heat_df = gpd.GeoDataFrame(bike_heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not bike_heat_df.empty, f" Heat Dataframe is empty: {bike_heat_df.head(5)}"
-    heat_data = [[[row['latitude'], row['longitude'], 0.1] for index, row in bike_heat_df[bike_heat_df['year'] == i].iterrows()] for
-                 i in range(2011, 2023)]
+    heat_data = [
+        [[row['latitude'], row['longitude'], 0.1] for index, row in bike_heat_df[bike_heat_df['year'] == i].iterrows()]
+        for
+        i in range(2011, 2023)]
     logger.debug(f"First element of heat data: {heat_data[0]}")
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
     AccidentType = "Bicycles: "
@@ -131,20 +130,20 @@ def add_bike_heat_map_time(folium_map):
 
 
 def add_pedestrian_heat_map_time(folium_map):
-
     # Process heat map data
     pedestrian_heat_view_data = get_view("pedestrianheat")
     heat_df = gpd.GeoDataFrame(pedestrian_heat_view_data, columns=['latitude', 'longitude', 'year'])
 
     assert not heat_df.empty, f" Heat Dataframe is empty: {heat_df.head(5)}"
-    heat_data = [[[row['latitude'], row['longitude'], 0.5] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
+    heat_data = [[[row['latitude'], row['longitude'], 0.5] for index, row in heat_df[heat_df['year'] == i].iterrows()]
+                 for
                  i in range(2011, 2023)]
     logger.debug(f"First element of PED heat data: {heat_data[0]}")
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
     AccidentType = "Pedestrians: "
     index = [str(element) for element in index]
     index = [AccidentType + element for element in index]
-    #gradient =
+    # gradient =
     # plot heat map
     gradient = generate_hue_gradient(0.2, 5)
     hm = plugins.HeatMapWithTime(heat_data,
@@ -161,7 +160,8 @@ def add_pedestrian_heat_map_time(folium_map):
 
 
 def add_heat_map_time(heat_df, folium_map):
-    heat_data = [[[row['latitude'], row['longitude'], 0.5] for index, row in heat_df[heat_df['year'] == i].iterrows()] for
+    heat_data = [[[row['latitude'], row['longitude'], 0.5] for index, row in heat_df[heat_df['year'] == i].iterrows()]
+                 for
                  i in range(2011, 2023)]
     index = [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
     # create heat map
@@ -259,17 +259,72 @@ def generate_hue_gradient(hue, num_colors):
         lightness = 0.1 + 0.8 * (i / (num_colors - 1))
         saturation = 0.1 + 0.8 * (i / (num_colors - 1))
         rgb = colorsys.hls_to_rgb(hue, lightness, saturation)
-        gradient[i / (num_colors - 1)] = '#{:02x}{:02x}{:02x}'.format(int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
+        gradient[i / (num_colors - 1)] = '#{:02x}{:02x}{:02x}'.format(int(rgb[0] * 255), int(rgb[1] * 255),
+                                                                      int(rgb[2] * 255))
     return gradient
 
+
 def generate_contrasting_gradient(num_colors):
-    cmap = plt.get_cmap('viridis')      # viridis is a map with contrasting colors
+    cmap = plt.get_cmap('viridis')  # viridis is a map with contrasting colors
     gradient = {}
     for i in range(num_colors):
         rgba = cmap(i / (num_colors - 1))
-        gradient[i / (num_colors - 1)] = '#{:02x}{:02x}{:02x}'.format(int(rgba[0]*255), int(rgba[1]*255), int(rgba[2]*255))
+        gradient[i / (num_colors - 1)] = '#{:02x}{:02x}{:02x}'.format(int(rgba[0] * 255), int(rgba[1] * 255),
+                                                                      int(rgba[2] * 255))
     return gradient
 
+
+def add_miv_count_station_locations():
+    get_data_mic_sql = """
+    SELECT
+        zsid, ekoord, nkoord,
+        AVG(anzfahrzeuge) AS average_count
+    FROM
+        mivcount
+    GROUP BY
+        zsid, ekoord, nkoord
+    """
+    remote_db = RemoteDB()
+    miv_result = remote_db.execute_query(get_data_mic_sql)
+    miv_df = pd.DataFrame(miv_result)
+    miv_df[['lon', 'lat']] = miv_df.apply(lambda row: convert_to_wgs84(row['ekoord'], row['nkoord']), axis=1)
+    miv_df['average_count'] = miv_df['average_count'].apply(lambda x: round(float(x)))
+    count_stations_layer = folium.FeatureGroup(name='Count-stations cars', show=False)
+    for index, row in miv_df.iterrows():
+        folium.Marker(location=[row['lat'], row['lon']], popup="avg. " + str(row['average_count']), show=False).add_to(count_stations_layer)
+    count_stations_layer.add_to(toggle_map)
+    remote_db.close()
+def add_fb_count_station_locations():
+    get_data_mic_sql = """
+    SELECT DISTINCT  
+        ost,
+        nord,
+        AVG(velo_total) as average_velo_count,
+        AVG(fuss_total) as average_fuss_count
+    FROM fbcount_copy
+    GROUP BY ost,nord;
+    """
+    remote_db = RemoteDB()
+    FB_result = remote_db.execute_query(get_data_mic_sql)
+    FB_df = pd.DataFrame(FB_result)
+    FB_df[['ost', 'nord']] = FB_df.apply(lambda row: convert_to_wgs84(row['ost'], row['nord']), axis=1)
+    FB_df['average_velo_count'] = FB_df['average_velo_count'].apply(lambda x: round(float(x)))
+    FB_df['average_velo_count'] = FB_df['average_velo_count'].astype(str)
+    FB_df['average_fuss_count'] = FB_df['average_fuss_count'].apply(lambda x: round(float(x)))
+    FB_df['average_fuss_count'] = FB_df['average_fuss_count'].astype(str)
+    count_stations_layer = folium.FeatureGroup(name='Count-stations pedestrians and bicycles', show=False)
+    for index, row in FB_df.iterrows():
+        folium.Marker(location=[row['nord'], row['ost']], popup="Bicycle and pedestrian count station", show=False).add_to(count_stations_layer)
+    count_stations_layer.add_to(toggle_map)
+    remote_db.close()
+def convert_to_wgs84(lon, lat):
+    swiss_crs = CRS.from_epsg(2056)
+    wgs84_crs = CRS.from_epsg(4326)
+
+    transformer = Transformer.from_crs(swiss_crs, wgs84_crs, always_xy=True)
+    lon, lat = transformer.transform(lon, lat)
+
+    return pd.Series({'lon': lon, 'lat': lat})
 
 
 if __name__ == "__main__":
@@ -293,11 +348,13 @@ if __name__ == "__main__":
         tiles="cartodb positron"
     )
 
+    add_miv_count_station_locations()
+    add_fb_count_station_locations()
     #setup_views()
 
     create_heat_map_with_time(time_map)
     create_heat_map_toggle(toggle_map)
 
     ## Save Maps ============================================================================================
-    save_map_as_html(toggle_map, "heat_map_toggle")
+    save_map_as_html(toggle_map, "html/heat_map_toggle")
     save_map_as_html(time_map, "html/heat_map_time")
