@@ -24,11 +24,12 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 stream_handler.setFormatter(formatter)
 logger.addHandler(stream_handler)
 
+
 accidents_filepath = "../src/datasets/integrated/Accidents.geojson"
 signaled_speeds_filepath = "../src/datasets/integrated/signaled_speeds.geojson.geojson"
 
 # Map centered around zurich
-zurich_coordinates = [47.368650, 8.539183]
+zurich_coordinates = [47.368650,  	8.539183]
 fixed_map_zurich_original_coords = folium.Map(
     location=zurich_coordinates,
     zoom_start=13,
@@ -60,6 +61,7 @@ color_dict = {
 
 # Create Maps =========================================================================================================
 def create_heat_map_with_time(folium_map):
+
     # Process heat map data
     heat_view_data = get_view("heat")
     heat_df = gpd.GeoDataFrame(heat_view_data, columns=['latitude', 'longitude', 'year'])
@@ -358,3 +360,33 @@ if __name__ == "__main__":
     ## Save Maps ============================================================================================
     save_map_as_html(toggle_map, "html/heat_map_toggle")
     save_map_as_html(time_map, "html/heat_map_time")
+
+    ## Create Maps with fixed center=============================================================================
+    time_map_fix = folium.Map(
+        location=zurich_coordinates,
+        zoom_start=13,
+        zoom_control=True,
+        dragging=False,
+        scrollWheelZoom=True,
+        doubleClickZoom=False,
+        tiles="cartodb positron"
+    )
+
+    toggle_map_fix = folium.Map(
+        location=zurich_coordinates,
+        zoom_start=13,
+        zoom_control=True,
+        dragging=False,
+        scrollWheelZoom=True,
+        doubleClickZoom=False,
+        tiles="cartodb positron"
+    )
+
+    #setup_views()
+
+    create_heat_map_with_time(time_map_fix)
+    create_heat_map_toggle(toggle_map_fix)
+
+    ## Save Maps ============================================================================================
+    save_map_as_html(toggle_map_fix, "html/heat_map_toggle_fix")
+    save_map_as_html(time_map_fix, "html/heat_map_time_fix")
