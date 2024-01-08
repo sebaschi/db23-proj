@@ -10,8 +10,6 @@ import numpy as np
 logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 
-
-
 # Summary charts ======================================================================================================
 def plt_acc_by_year(db):
     acc_year_sql = """
@@ -259,8 +257,6 @@ def severity_by_month(db):
     fig.write_image("fig/severity_by_month.png")
     fig.write_html("html/severity_by_month.html")
     #fig.show()
-
-
 
 
 # Utilities ===========================================================================================================

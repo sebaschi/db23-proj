@@ -63,6 +63,6 @@ if __name__ == "__main__":
     try:
         get_data(remote_db)
     except Exception as e:
-        print(f"Exception {e} in plots.py")
+        print(f"Exception {e} in calculations.py")
     finally:
         remote_db.close()
