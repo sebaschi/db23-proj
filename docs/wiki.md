@@ -34,3 +34,10 @@ Then manually copy
 \copy FootBikeCount FROM 'FootBikeCount.csv' WITH CSV HEADER
 \copy mivcount FROM 'MivCount.csv' WITH CSV HEADER
 ```
+
+# How to create a db dump from the command line
+```bash
+pg_dump -U sebl -p 5433 -d proj_db > [dump_file].sql
+```
+
+
