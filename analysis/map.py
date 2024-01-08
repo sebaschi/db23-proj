@@ -300,4 +300,4 @@ if __name__ == "__main__":
 
     ## Save Maps ============================================================================================
     save_map_as_html(toggle_map, "heat_map_toggle")
-    save_map_as_html(time_map, "heat_map_time")
+    save_map_as_html(time_map, "html/heat_map_time")
