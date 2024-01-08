@@ -71,6 +71,7 @@ def plt_acc_by_day_year(db):
         animation_frame='year',
         labels={'weekday': 'Weekday', 'count': 'Number of Accidents'},
         category_orders={'weekday': ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']},
+        orientation='h'
     )
     fig.update_yaxes(range=[0, 1000])
     # Customize the layout to include a slider
@@ -135,9 +136,9 @@ def plt_acc_by_daytime(db):
     result = db.execute_query(acc_weekday_sql)
     result_df = pd.DataFrame(result)
 
-    fig = px.bar(result_df, y='hour', x='count', orientation='h')
-    fig.write_image("fig/acc_by_day.png")
-    fig.write_html("html/acc_by_day.html")
+    fig = px.bar(result_df, y='hour', x='count', orientation='h', title='Accidents by day')
+    fig.write_image("fig/acc_by_daytime.png")
+    fig.write_html("html/acc_by_daytime.html")
 
 # Time Series charts ==================================================================================================
 def acc_by_type(db):
