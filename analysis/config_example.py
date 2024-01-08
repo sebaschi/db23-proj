@@ -1,5 +1,5 @@
 # config.py, adjust as needed
-# TODO RENAME THIS FILE TO "config.py"
+# TODO COPY and then RENAME TO "config.py"
 SSH_HOST = 'slenzlinger.dev'
 SSH_USERNAME = 'sebl'  #TODO: Enter own username
 SSH_PASSWORD = 'your_ssh_password' # TODO: to not push to git
