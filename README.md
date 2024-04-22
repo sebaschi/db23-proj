@@ -1,3 +1,5 @@
+This repo is meant as public read-only copy of the original project, which is hosted on a non-public university server.
+
 # Database Project Group 1
 
 ## Preliminaries
